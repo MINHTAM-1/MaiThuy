@@ -1,8 +1,8 @@
 var express = require('express');
 var router = express.Router();
-var db = require('./../models/database');
+var db = require('../models/databasedm');
 
-router.get('/category', async function (req, res) {
+router.get('/', async function (req, res) {
     const database = await db();
 
     const category = database.collection('category');
@@ -20,10 +20,10 @@ router.get('/category', async function (req, res) {
             items: count
         };
     });
-    res.json({ category: result});
+    res.json({ category: result });
 });
 
-router.get('/category/viewall', async function (req, res) {
+router.get('/viewall', async function (req, res) {
     const database = await db();
 
     const category = database.collection('category');
@@ -32,7 +32,7 @@ router.get('/category/viewall', async function (req, res) {
     const result_category = await category.find({}).toArray();
     const result_products = await products.find({}).toArray();
 
-    const result = result_category.map(cat =>{
+    const result = result_category.map(cat => {
         const count = result_products.filter(p => p.category.toString() === cat._id.toString()).length;
         return {
             _id: cat._id,
@@ -41,7 +41,7 @@ router.get('/category/viewall', async function (req, res) {
             items: count
         };
     });
-    res.json({ category: result});
-})
+    res.json({ category: result });
+});
 
 module.exports = router;

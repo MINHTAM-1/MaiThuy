@@ -1,8 +1,8 @@
-const { connectDB, ObjectId } = require('../models/database');
+const { db, ObjectId } = require('../models/database');
 
 async function seedReviews() {
   try {
-    const database = await connectDB();
+    const database = await db();
     const reviews = database.collection('reviews');
     const products = database.collection('products');
     const users = database.collection('users');
@@ -19,6 +19,7 @@ async function seedReviews() {
       process.exit(1);
     }
 
+    
     const sampleReviews = [];
 
     // Tạo reviews cho mỗi sản phẩm

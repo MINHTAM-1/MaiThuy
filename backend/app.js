@@ -31,6 +31,8 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/admin', require('./routes/admin'));
+var categoriesRouter = require('./routes/categories');
+app.use('/api/categories', categoriesRouter);
 
 // Basic routes
 app.get('/', (req, res) => {
@@ -63,3 +65,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy trên port ${PORT}`);
   console.log(`📍 http://localhost:${PORT}`);
 });
+
+

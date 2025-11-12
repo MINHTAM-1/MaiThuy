@@ -20,7 +20,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
-import AdminLayout from './components/layout/AdminLayout'; // THÊM DÒNG NÀY
+import AdminLayout from './components/layout/AdminLayout'; 
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Public Pages
@@ -48,7 +48,6 @@ import AdminOrderDetail from './pages/admin/OrderDetail';
 // User Pages
 import Profile from './pages/user/Profile';
 import OrderDetail from './pages/user/OrderDetail';
-import Wishlist from './pages/wishlist/Wishlist';
 
 function App() {
   return (
@@ -92,14 +91,6 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Layout><OrderDetail /></Layout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/wishlist" 
-              element={
-                <ProtectedRoute>
-                  <Layout><Wishlist /></Layout>
                 </ProtectedRoute>
               } 
             />

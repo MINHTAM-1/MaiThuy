@@ -1,9 +1,9 @@
-const { connectDB, ObjectId } = require('../models/database');
+const { db, ObjectId } = require('../models/database');
 const bcrypt = require('bcryptjs');
 
 async function seedUsers() {
   try {
-    const database = await connectDB();
+    const database = await db();
     const users = database.collection('users');
 
     console.log('🗑️ Đang xóa dữ liệu users cũ...');

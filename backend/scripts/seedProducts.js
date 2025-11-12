@@ -1,10 +1,10 @@
-const { connectDB, ObjectId } = require('../models/database');
+const { db, ObjectId } = require('../models/database');
 
 async function seedProducts() {
   let client;
   try {
     // Kết nối database
-    const database = await connectDB();
+    const database = await db();
     const products = database.collection('products');
 
     console.log('🗑️ Đang xóa dữ liệu cũ...');

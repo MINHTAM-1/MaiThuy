@@ -15,7 +15,7 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -27,32 +27,32 @@ const Products = () => {
   useEffect(() => {
     const category = searchParams.get('category') || '';
     const search = searchParams.get('search') || '';
-    
+
     setSelectedCategory(category);
     setSearchTerm(search);
   }, [searchParams]);
 
   const fetchProducts = async () => {
-  try {
-    setLoading(true);
-    const response = await productsAPI.getAll();
-    console.log('📦 Products API response:', response.data);
-    
-    const productsData = response.data.data || response.data || [];
-    console.log('🖼️ Product images:', productsData.map(p => ({
-      name: p.name,
-      images: p.images,
-      firstImage: p.images?.[0]
-    })));
-    
-    setProducts(productsData);
-  } catch (error) {
-    setError('Lỗi khi tải sản phẩm');
-    console.error('Fetch products error:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      const response = await productsAPI.getAll();
+      console.log('📦 Products API response:', response.data);
+
+      const productsData = response.data.data || response.data || [];
+      console.log('🖼️ Product images:', productsData.map(p => ({
+        name: p.name,
+        images: p.images,
+        firstImage: p.images?.[0]
+      })));
+
+      setProducts(productsData);
+    } catch (error) {
+      setError('Lỗi khi tải sản phẩm');
+      console.error('Fetch products error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchCategories = async () => {
     try {
@@ -76,7 +76,7 @@ const Products = () => {
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(product => 
+      result = result.filter(product =>
         product.name?.toLowerCase().includes(term) ||
         product.description?.toLowerCase().includes(term) ||
         (product.tags && product.tags.some(tag => tag.toLowerCase().includes(term)))
@@ -90,40 +90,40 @@ const Products = () => {
   const handleCategoryChange = (category) => {
     const newCategory = category === 'all' ? '' : category;
     setSelectedCategory(newCategory);
-    
+
     const newParams = new URLSearchParams(searchParams);
-    
+
     if (!newCategory) {
       newParams.delete('category');
     } else {
       newParams.set('category', newCategory);
     }
-    
+
     // Giữ lại search term khi chuyển category
     if (searchTerm) {
       newParams.set('search', searchTerm);
     }
-    
+
     setSearchParams(newParams);
   };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     const newParams = new URLSearchParams(searchParams);
-    
+
     if (value) {
       newParams.set('search', value);
     } else {
       newParams.delete('search');
     }
-    
+
     // Giữ lại category khi tìm kiếm
     if (selectedCategory) {
       newParams.set('category', selectedCategory);
     }
-    
+
     setSearchParams(newParams);
   };
 
@@ -189,11 +189,10 @@ const Products = () => {
             <li>
               <button
                 onClick={() => handleCategoryChange('all')}
-                className={`px-6 py-3 rounded-full font-medium transition-colors duration-200 ${
-                  !selectedCategory || selectedCategory === 'all'
+                className={`px-6 py-3 rounded-full font-medium transition-colors duration-200 ${!selectedCategory || selectedCategory === 'all'
                     ? 'bg-amber-600 text-white'
                     : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                }`}
+                  }`}
               >
                 Tất cả sản phẩm
               </button>
@@ -202,11 +201,10 @@ const Products = () => {
               <li key={category}>
                 <button
                   onClick={() => handleCategoryChange(category)}
-                  className={`px-6 py-3 rounded-full font-medium transition-colors duration-200 ${
-                    selectedCategory === category
+                  className={`px-6 py-3 rounded-full font-medium transition-colors duration-200 ${selectedCategory === category
                       ? 'bg-amber-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
@@ -255,8 +253,8 @@ const Products = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
-                <ProductCard 
-                  key={product._id} 
+                <ProductCard
+                  key={product._id}
                   product={product}
                   onViewDetails={handleViewDetails}
                   isAuthenticated={isAuthenticated}
@@ -268,7 +266,7 @@ const Products = () => {
 
         {/* Product Detail Modal */}
         {selectedProduct && (
-          <ProductDetailModal 
+          <ProductDetailModal
             product={selectedProduct}
             onClose={handleCloseDetails}
             isAuthenticated={isAuthenticated}
@@ -299,14 +297,16 @@ const ProductDetailModal = ({ product, onClose, isAuthenticated }) => {
             {/* Product Image */}
             <div className="bg-gray-100 rounded-lg h-64 flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
-                <img 
-                  src={product.images[0]} 
+                <img
+                  src={product.images?.[0] || '/assets/no-image.jpg'}
                   alt={product.name}
                   className="h-full w-full object-cover rounded-lg"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/300x300?text=No+Image';
+                    e.target.onerror = null;
+                    e.target.src = '/images/no-image.jpg';
                   }}
                 />
+
               ) : (
                 <div className="text-6xl text-gray-400">☕</div>
               )}
