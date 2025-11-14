@@ -25,62 +25,51 @@ const Login = () => {
     if (error) setError("");
   };
 
- // Trong handleSubmit function của Login component
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
 
-  try {
-    const result = await login(formData.email, formData.password);
+    try {
+      const result = await login(formData.email, formData.password);
 
-    if (result.success) {
-      // Lưu remember me preference
-      if (formData.rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
+      if (result.success) {
+        // Lưu remember me preference
+        if (formData.rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
+
+        // Hiển thị thông báo thành công
+        alert('Đăng nhập thành công!');
+
+        console.log('Login successful, redirecting...');
+        
+        // QUAN TRỌNG: Redirect sau khi login thành công
+        const from = location.state?.from?.pathname || (result.user?.role === 'admin' ? '/admin/dashboard' : '/');
+        navigate(from, { replace: true });
+        
       } else {
-        localStorage.removeItem('rememberMe');
+        setError(result.message);
       }
-
-      // Hiển thị thông báo thành công
-      alert('Đăng nhập thành công!');
-
-      console.log('✅ Login successful, redirecting...');
-      
-      // QUAN TRỌNG: Redirect sau khi login thành công
-      const from = location.state?.from?.pathname || (result.user?.role === 'admin' ? '/admin/dashboard' : '/');
-      navigate(from, { replace: true });
-      
-    } else {
-      setError(result.message);
+    } catch (err) {
+      setError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    setError('Có lỗi xảy ra khi đăng nhập. Vui lòng thử lại.');
-    console.error('Login error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: "url(/assets/bg-login.jpg)",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <div className="max-w-6xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-2">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="w-full max-w-6xl h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 h-full min-h-[80vh]">
           {/* Left Side - Welcome */}
           <div className="bg-amber-900 text-white p-12 flex flex-col justify-center">
             <div className="logo mb-8">
               <div className="flex items-center space-x-3 mb-4">
-                <span className="text-3xl">☕</span>
-                <span className="text-2xl font-bold">MAITHUY Coffee</span>
+                <span className="text-2xl font-bold">MAITHUY COFFEE</span>
               </div>
             </div>
 
@@ -98,7 +87,7 @@ const handleSubmit = async (e) => {
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="p-12">
+          <div className="p-12 flex flex-col justify-center">
             <form onSubmit={handleSubmit} className="space-y-6">
               <p className="text-3xl font-bold text-gray-900 mb-2">
                 Đăng nhập tài khoản
@@ -117,9 +106,11 @@ const handleSubmit = async (e) => {
                     Email
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-                      📧
-                    </span>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                      </svg>
+                    </div>
                     <input
                       type="email"
                       name="email"
@@ -139,9 +130,11 @@ const handleSubmit = async (e) => {
                     Mật khẩu
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-                      🔒
-                    </span>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                      </svg>
+                    </div>
                     <input
                       type="password"
                       name="password"
@@ -177,8 +170,11 @@ const handleSubmit = async (e) => {
 
                   <Link
                     to="#"
-                    className="text-sm text-amber-600 hover:text-amber-700"
+                    className="text-sm text-amber-600 hover:text-amber-700 flex items-center"
                   >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 mr-1">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                    </svg>
                     Quên mật khẩu ?
                   </Link>
                 </div>
@@ -195,24 +191,16 @@ const handleSubmit = async (e) => {
                 >
                   {loading ? (
                     <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
                       Đang đăng nhập...
                     </div>
                   ) : (
                     "Đăng nhập"
                   )}
                 </button>
-
-                {/* Demo Accounts Info */}
-                <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-200">
-                  <p className="text-sm text-amber-800 font-semibold mb-2">
-                    Tài khoản demo:
-                  </p>
-                  <div className="text-xs text-amber-700 space-y-1">
-                    <p>👑 Admin: admin@maithuy.com / 123456</p>
-                    <p>👤 User: customer1@maithuy.com / 123456</p>
-                  </div>
-                </div>
               </div>
             </form>
           </div>

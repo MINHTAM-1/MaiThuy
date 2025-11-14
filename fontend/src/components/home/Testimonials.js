@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 const Testimonials = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -8,23 +8,26 @@ const Testimonials = () => {
       id: 1,
       name: "Chị Nguyễn Thị Mai",
       role: "Khách hàng thân thiết",
-      content: "Cà phê ở đây có hương vị rất đặc biệt, thơm ngon khác hẳn những nơi khác. Tôi đã mua ở đây được hơn 2 năm và không có ý định đổi chỗ nào khác.",
-      rating: 5
+      content:
+        "Cà phê ở đây có hương vị rất đặc biệt, thơm ngon khác hẳn những nơi khác. Tôi đã mua ở đây được hơn 2 năm và không có ý định đổi chỗ nào khác.",
+      rating: 5,
     },
     {
       id: 2,
       name: "Anh Trần Văn Nam",
       role: "Chủ quán cà phê",
-      content: "Tôi sử dụng cà phê của MAITHUY COFFEE cho quán của mình đã được 1 năm. Chất lượng ổn định, khách hàng rất hài lòng về hương vị.",
-      rating: 5
+      content:
+        "Tôi sử dụng cà phê của MAITHUY COFFEE cho quán của mình đã được 1 năm. Chất lượng ổn định, khách hàng rất hài lòng về hương vị.",
+      rating: 5,
     },
     {
       id: 3,
       name: "Chị Lê Thị Hương",
       role: "Nhân viên văn phòng",
-      content: "Giao hàng nhanh, đóng gói cẩn thận. Cà phê rang xay mới nên rất thơm. Nhân viên tư vấn nhiệt tình, tôi rất hài lòng với dịch vụ.",
-      rating: 4
-    }
+      content:
+        "Giao hàng nhanh, đóng gói cẩn thận. Cà phê rang xay mới nên rất thơm. Nhân viên tư vấn nhiệt tình, tôi rất hài lòng với dịch vụ.",
+      rating: 4,
+    },
   ];
 
   useEffect(() => {
@@ -41,11 +44,20 @@ const Testimonials = () => {
         {[...Array(5)].map((_, index) => (
           <span
             key={index}
-            className={`text-2xl ${
-              index < rating ? 'text-amber-400' : 'text-gray-300'
-            }`}
+            className={`${index < rating ? "text-amber-400" : "text-gray-300"}`}
           >
-            ★
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-6 h-6"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
+                clipRule="evenodd"
+              />
+            </svg>
           </span>
         ))}
       </div>
@@ -61,7 +73,8 @@ const Testimonials = () => {
             Khách hàng nói gì về chúng tôi
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Những phản hồi chân thực từ khách hàng đã trải nghiệm sản phẩm của MAITHUY COFFEE
+            Những phản hồi chân thực từ khách hàng đã trải nghiệm sản phẩm của
+            MAITHUY COFFEE
           </p>
         </div>
 
@@ -72,24 +85,31 @@ const Testimonials = () => {
             <div className="absolute top-4 left-4 text-amber-200 text-6xl">
               "
             </div>
-            
+
             {/* Testimonial Content */}
             <div className="text-center relative z-10">
               {renderStars(testimonials[currentTestimonial].rating)}
-              
+
               <blockquote className="text-xl md:text-2xl text-gray-700 mb-8 italic">
                 "{testimonials[currentTestimonial].content}"
               </blockquote>
-              
+
               <div className="flex items-center justify-center space-x-4">
                 <div className="w-12 h-12 bg-amber-200 rounded-full flex items-center justify-center">
                   <span className="font-semibold text-amber-800">
-                    {testimonials[currentTestimonial].name.split(' ').map(n => n[0]).join('')}
+                    {testimonials[currentTestimonial].name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
                   </span>
                 </div>
                 <div className="text-left">
-                  <p className="font-semibold text-gray-900">{testimonials[currentTestimonial].name}</p>
-                  <p className="text-gray-600">{testimonials[currentTestimonial].role}</p>
+                  <p className="font-semibold text-gray-900">
+                    {testimonials[currentTestimonial].name}
+                  </p>
+                  <p className="text-gray-600">
+                    {testimonials[currentTestimonial].role}
+                  </p>
                 </div>
               </div>
             </div>
@@ -101,7 +121,9 @@ const Testimonials = () => {
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
                   className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                    index === currentTestimonial ? 'bg-amber-600' : 'bg-gray-300'
+                    index === currentTestimonial
+                      ? "bg-amber-600"
+                      : "bg-gray-300"
                   }`}
                 />
               ))}

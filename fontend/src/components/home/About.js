@@ -7,7 +7,7 @@ const About = () => {
           <div className="lg:w-1/2">
             <img
               src="/assets/about.jpg"
-              alt="About MAITHUY Coffee"
+              alt="Về MAITHUY Coffee"
               className="rounded-lg shadow-lg w-full"
             />
           </div>
@@ -22,10 +22,10 @@ const About = () => {
                 MAITHUY COFFEE
               </h1>
               <p className="text-gray-600 leading-relaxed">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi
-                sed egestas justo. Nullamaximus, nunc at luctus maximus, sem
-                felis ultricie lectus, non consectetur ligulaeros eu dui. Donec
-                faucibus pellentesque lorem, et laoreet purus vestibulum.
+                MAITHUY Coffee được thành lập với mong muốn mang đến những ly cà phê
+                nguyên chất, đậm đà hương vị và tràn đầy năng lượng. Chúng tôi
+                luôn chọn lựa những hạt cà phê chất lượng cao, rang mới mỗi ngày,
+                đảm bảo hương thơm tự nhiên và vị ngon trọn vẹn trong từng tách.
               </p>
             </div>
 
@@ -33,15 +33,16 @@ const About = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold text-gray-900">Cà phê hữu cơ</h3>
                 <p className="text-gray-600 text-sm">
-                  Ntrinsicly re-engineer exceptional niches for high standards
-                  in supply chainsources where
+                  Sử dụng nguồn nguyên liệu sạch, canh tác tự nhiên, an toàn cho sức khỏe
+                  và thân thiện với môi trường.
                 </p>
               </div>
+
               <div className="space-y-2">
-                <h3 className="font-semibold text-gray-900">Cà phê hữu cơ</h3>
+                <h3 className="font-semibold text-gray-900">Rang mới mỗi ngày</h3>
                 <p className="text-gray-600 text-sm">
-                  Ntrinsicly re-engineer exceptional niches for high standards
-                  in supply chainsources where
+                  Mỗi mẻ rang đều được thực hiện thủ công, đảm bảo độ tươi ngon
+                  và hương vị nguyên bản của hạt cà phê.
                 </p>
               </div>
             </div>

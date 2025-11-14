@@ -11,11 +11,11 @@ async function db() {
     if (!databaseConnection) {
       await client.connect();
       databaseConnection = client.db("sach");
-      console.log("✅ Kết nối thành công đến MongoDB");
+      console.log("Kết nối thành công đến MongoDB");
     }
     return databaseConnection;
   } catch (error) {
-    console.error("❌ Lỗi kết nối MongoDB:", error);
+    console.error("Lỗi kết nối MongoDB:", error);
     throw error;
   }
 }

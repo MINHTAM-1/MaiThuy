@@ -1,12 +1,18 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { authAPI, usersAPI } from '../services/api'; // SỬA: '../services/api'
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback,
+} from "react";
+import { authAPI, usersAPI } from "../services/api";
 
 const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -14,60 +20,53 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-
-  console.log('🔐 AuthContext State:', { 
-    token: token ? 'exists' : 'null', 
-    user, 
-    loading 
-  });
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   // Logout function
   const logout = useCallback(() => {
-    console.log('🚪 Logging out...');
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setToken(null);
     setUser(null);
-    
-    // Sử dụng window.location thay vì useNavigate
-    window.location.href = '/login';
+    window.location.href = "/login";
   }, []);
 
   // Function để lấy profile user
   const getUserProfile = useCallback(async () => {
     try {
-      console.log('🔄 Getting user profile...');
       const response = await usersAPI.getProfile();
-      console.log('✅ Profile response:', response.data);
-      
-      if (response.data && response.data.user) {
-        setUser(response.data.user);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-      } else if (response.data && response.data.data) {
-        setUser(response.data.data.user || response.data.data);
-        localStorage.setItem('user', JSON.stringify(response.data.data.user || response.data.data));
+
+      // Xử lý nhiều structure response khác nhau
+      let userData;
+
+      if (response?.data?.user) {
+        userData = response.data.user;
+      } else if (response?.data) {
+        userData = response.data;
+      } else if (response?.user) {
+        userData = response.user;
+      } else if (response) {
+        userData = response;
+      }
+
+      if (userData) {
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
       } else {
-        console.error('❌ No user data in response');
-        const savedUser = localStorage.getItem('user');
+        // Fallback to localStorage
+        const savedUser = localStorage.getItem("user");
         if (savedUser) {
           try {
             const parsedUser = JSON.parse(savedUser);
             setUser(parsedUser);
           } catch (e) {
-            console.error('Error parsing saved user:', e);
+            console.error("Error parsing saved user:", e);
           }
         }
       }
     } catch (error) {
-      console.error('❌ Get profile error:', error);
-      console.error('Error details:', {
-        status: error.response?.status,
-        message: error.response?.data?.message,
-        data: error.response?.data
-      });
-      
-      if (error.response?.status === 401) {
+      console.error("Get profile error:", error);
+      if (error.status === 401) {
         logout();
       }
     } finally {
@@ -78,24 +77,17 @@ export const AuthProvider = ({ children }) => {
   // Check auth khi component mount
   useEffect(() => {
     const checkAuth = async () => {
-      console.log('🔍 Checking authentication...');
-      const savedToken = localStorage.getItem('token');
-      const savedUser = localStorage.getItem('user');
-
-      console.log('📦 Saved data:', { 
-        token: savedToken ? 'exists' : 'null', 
-        user: savedUser ? 'exists' : 'null' 
-      });
+      const savedToken = localStorage.getItem("token");
+      const savedUser = localStorage.getItem("user");
 
       if (savedToken) {
         await getUserProfile();
       } else if (savedUser) {
         try {
           const parsedUser = JSON.parse(savedUser);
-          console.log('👤 Using saved user:', parsedUser);
           setUser(parsedUser);
         } catch (e) {
-          console.error('❌ Error parsing saved user:', e);
+          console.error("Error parsing saved user:", e);
         }
         setLoading(false);
       } else {
@@ -106,78 +98,108 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, [token, getUserProfile]);
 
-  // Login function
+  // Login function - ĐÃ SỬA
   const login = async (email, password) => {
     try {
-      console.log('🚀 Attempting login with:', { email });
       const response = await authAPI.login({ email, password });
-      console.log('✅ Login response:', response.data);
-      
-      const { token: newToken, user: userData } = response.data;
-      
-      if (!newToken || !userData) {
-        console.error('❌ Missing token or user data in response');
-        return { 
-          success: false, 
-          message: 'Thiếu dữ liệu đăng nhập' 
+
+      // Extract token và user từ response (đã được axios interceptor xử lý)
+      const token = response?.data?.token || response?.token;
+      const userData = response?.data?.user || response?.user;
+
+      if (!token || !userData) {
+        return {
+          success: false,
+          message: "Thiếu dữ liệu đăng nhập từ server",
         };
       }
 
-      console.log('👤 User role:', userData.role);
-      
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      setToken(newToken);
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      setToken(token);
       setUser(userData);
-      
-      console.log('✅ Login successful, state updated');
-      
-      return { 
-        success: true, 
-        data: response.data,
-        user: userData 
+
+      return {
+        success: true,
+        data: response,
+        user: userData,
       };
     } catch (error) {
-      console.error('❌ Login error:', error);
-      console.error('Error response:', error.response?.data);
-      
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Đăng nhập thất bại' 
+      return {
+        success: false,
+        message:
+          error.message ||
+          error.response?.data?.message ||
+          "Đăng nhập thất bại",
       };
     }
   };
 
+  // Trong function register của AuthContext.js
   const register = async (userData) => {
     try {
+      console.log("📝 Register data being sent:", userData);
+
       const response = await authAPI.register(userData);
-      const { token: newToken, user: newUser } = response.data;
-      
-      localStorage.setItem('token', newToken);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      setToken(newToken);
+      console.log("✅ Register response:", response);
+
+      const token = response?.data?.token || response?.token;
+      const newUser = response?.data?.user || response?.user;
+
+      if (!token || !newUser) {
+        return {
+          success: false,
+          message: "Thiếu dữ liệu đăng ký từ server",
+        };
+      }
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(newUser));
+      setToken(token);
       setUser(newUser);
-      
-      return { success: true, data: response.data };
+
+      return {
+        success: true,
+        data: response,
+        user: newUser,
+      };
     } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Đăng ký thất bại' 
+      console.error("❌ Register error details:", {
+        message: error.message,
+        status: error.status,
+        data: error.data,
+        fullError: error,
+      });
+
+      return {
+        success: false,
+        message: error.data?.message || error.message || "Đăng ký thất bại",
       };
     }
   };
-
+  // Update profile function - ĐÃ SỬA
   const updateProfile = async (profileData) => {
     try {
       const response = await usersAPI.updateProfile(profileData);
-      setUser(response.data.user);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      return { success: true, data: response.data };
+
+      const updatedUser =
+        response?.data?.user || response?.user || response?.data;
+
+      if (updatedUser) {
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+
+      return {
+        success: true,
+        data: response,
+        user: updatedUser,
+      };
     } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.message || 'Cập nhật thất bại' 
+      return {
+        success: false,
+        message:
+          error.message || error.response?.data?.message || "Cập nhật thất bại",
       };
     }
   };
@@ -191,12 +213,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     isAuthenticated: !!user && !!token,
-    isAdmin: user?.role === 'admin'
+    isAdmin: user?.role === "admin",
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

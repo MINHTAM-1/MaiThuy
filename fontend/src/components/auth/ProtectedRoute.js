@@ -6,7 +6,7 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   const { isAuthenticated, isAdmin, loading, user } = useAuth();
   const location = useLocation();
 
-  console.log('🛡️ ProtectedRoute Debug:', {
+  console.log('ProtectedRoute Debug:', {
     path: location.pathname,
     isAuthenticated,
     isAdmin,
@@ -24,18 +24,18 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
   }
 
   if (!isAuthenticated) {
-    console.log('🔐 Redirecting to login - Not authenticated');
+    console.log('Redirecting to login - Not authenticated');
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (adminOnly && !isAdmin) {
-    console.warn('🚫 Access denied - Admin required');
+    console.warn('Access denied - Admin required');
     console.log('Current user role:', user?.role);
     console.log('Required: admin, Current:', user?.role);
     return <Navigate to="/" replace />;
   }
 
-  console.log('✅ Access granted to:', location.pathname);
+  console.log('Access granted to:', location.pathname);
   return children;
 };
 

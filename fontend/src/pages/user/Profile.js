@@ -68,7 +68,10 @@ const Profile = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" className="animate-spin h-12 w-12 text-amber-600" viewBox="0 0 24 24" fill="none">
+          <path fillRule="evenodd" clipRule="evenodd" d="M12 4.5a7.5 7.5 0 100 15 7.5 7.5 0 000-15zM2.25 12a9.75 9.75 0 1119.5 0 9.75 9.75 0 01-19.5 0z" fill="currentColor"/>
+          <path d="M12 4.5a7.5 7.5 0 017.5 7.5h3a10.5 10.5 0 00-21 0h3a7.5 7.5 0 017.5-7.5z" fill="currentColor"/>
+        </svg>
       </div>
     );
   }
@@ -77,8 +80,14 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
           <h2 className="text-xl font-semibold mb-4">Không tìm thấy thông tin người dùng</h2>
-          <Link to="/login" className="text-amber-600 hover:text-amber-700">
+          <Link to="/login" className="text-amber-600 hover:text-amber-700 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+            </svg>
             Đăng nhập
           </Link>
         </div>
@@ -93,14 +102,17 @@ const Profile = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-amber-200 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-amber-800">
-                {user.name?.split(' ').map(n => n[0]).join('') || 'U'}
-              </span>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-amber-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
               <p className="text-gray-600">{user.email}</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
                 Thành viên từ {new Date(user.createdAt).toLocaleDateString('vi-VN')}
               </p>
             </div>
@@ -114,33 +126,42 @@ const Profile = () => {
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors flex items-center ${
                     activeTab === 'profile'
                       ? 'bg-amber-50 text-amber-700 border border-amber-200'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  📝 Thông tin cá nhân
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Thông tin cá nhân
                 </button>
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors flex items-center ${
                     activeTab === 'orders'
                       ? 'bg-amber-50 text-amber-700 border border-amber-200'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  🛒 Đơn hàng của tôi
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  Đơn hàng của tôi
                 </button>
                 <button
                   onClick={() => setActiveTab('password')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors flex items-center ${
                     activeTab === 'password'
                       ? 'bg-amber-50 text-amber-700 border border-amber-200'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  🔐 Đổi mật khẩu
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  Đổi mật khẩu
                 </button>
               </nav>
             </div>
@@ -156,25 +177,34 @@ const Profile = () => {
                   {!isEditing ? (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+                      className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center"
                     >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
                       Chỉnh sửa
                     </button>
                   ) : (
-                    <div className="space-x-2">
+                    <div className="space-x-2 flex">
                       <button
                         onClick={() => {
                           setIsEditing(false);
                           fetchUserData(); // Reset data
                         }}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors flex items-center"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                         Hủy
                       </button>
                       <button
                         onClick={handleSave}
-                        className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+                        className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center"
                       >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
                         Lưu thay đổi
                       </button>
                     </div>
@@ -243,12 +273,17 @@ const Profile = () => {
                 
                 {orders.length === 0 ? (
                   <div className="text-center py-8">
-                    <div className="text-6xl mb-4">📦</div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
                     <p className="text-gray-500 text-lg mb-4">Bạn chưa có đơn hàng nào.</p>
                     <Link
                       to="/products"
-                      className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+                      className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors inline-flex items-center"
                     >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
                       Mua sắm ngay
                     </Link>
                   </div>
@@ -261,7 +296,10 @@ const Profile = () => {
                           <div className="flex justify-between items-start mb-3">
                             <div>
                               <h3 className="font-semibold text-gray-900">Đơn hàng #{order._id.slice(-8).toUpperCase()}</h3>
-                              <p className="text-sm text-gray-500">
+                              <p className="text-sm text-gray-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
                                 Ngày đặt: {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                               </p>
                             </div>
@@ -296,9 +334,12 @@ const Profile = () => {
                               </p>
                               <Link 
                                 to={`/orders/${order._id}`}
-                                className="text-amber-600 hover:text-amber-700 text-sm font-medium"
+                                className="text-amber-600 hover:text-amber-700 text-sm font-medium flex items-center"
                               >
                                 Xem chi tiết
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
                               </Link>
                             </div>
                           </div>
@@ -342,7 +383,10 @@ const Profile = () => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                     />
                   </div>
-                  <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+                  <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
                     Đổi mật khẩu
                   </button>
                 </div>

@@ -27,11 +27,11 @@ const ReviewSection = ({ productId }) => {
         reviewsData = [];
       }
 
-      console.log('✅ Final reviews to render:', reviewsData);
+      console.log('Final reviews to render:', reviewsData);
       setReviews(reviewsData);
       
     } catch (err) {
-      console.error('❌ Fetch reviews error:', err);
+      console.error('Fetch reviews error:', err);
       setError('Lỗi khi tải đánh giá');
       setReviews([]);
     } finally {
@@ -94,7 +94,10 @@ const ReviewSection = ({ productId }) => {
       
       {/* Thông báo lỗi */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
           {error}
         </div>
       )}
@@ -109,7 +112,12 @@ const ReviewSection = ({ productId }) => {
                 {'★'.repeat(Math.round(parseFloat(averageRating)))}
                 {'☆'.repeat(5 - Math.round(parseFloat(averageRating)))}
               </div>
-              <div className="text-gray-600 text-sm mt-1">{totalReviews} đánh giá</div>
+              <div className="text-gray-600 text-sm mt-1 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {totalReviews} đánh giá
+              </div>
             </div>
             
             <div className="flex-1 max-w-xs">
@@ -138,7 +146,9 @@ const ReviewSection = ({ productId }) => {
       <div className="space-y-4">
         {totalReviews === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            <div className="text-4xl mb-2">💬</div>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
             <p>Chưa có đánh giá nào cho sản phẩm này.</p>
             <p className="text-sm">Hãy là người đầu tiên đánh giá!</p>
           </div>
@@ -147,14 +157,20 @@ const ReviewSection = ({ productId }) => {
             <div key={review._id || review.id} className="border-b pb-4 last:border-b-0">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <div className="font-semibold text-gray-900">
+                  <div className="font-semibold text-gray-900 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                     {review.userName || review.username || 'Ẩn danh'}
                   </div>
                   <div className="text-yellow-400 text-sm">
                     {'★'.repeat(review.rating || 0)}{'☆'.repeat(5 - (review.rating || 0))}
                   </div>
                 </div>
-                <div className="text-gray-500 text-sm">
+                <div className="text-gray-500 text-sm flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                   {review.createdAt ? new Date(review.createdAt).toLocaleDateString('vi-VN') : 'Không xác định'}
                 </div>
               </div>
@@ -167,8 +183,10 @@ const ReviewSection = ({ productId }) => {
               
               {review.verifiedPurchase && (
                 <div className="inline-flex items-center text-green-600 text-xs mt-2">
-                  <span>✓</span>
-                  <span className="ml-1">Đã mua hàng</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  <span>Đã mua hàng</span>
                 </div>
               )}
             </div>
@@ -179,7 +197,10 @@ const ReviewSection = ({ productId }) => {
       {/* Write Review Button - Tạm ẩn vì chưa có auth */}
       {/* {user && (
         <div className="mt-6">
-          <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors">
+          <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
             Viết đánh giá
           </button>
         </div>

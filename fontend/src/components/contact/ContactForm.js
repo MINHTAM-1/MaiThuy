@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    address: '',
-    content: ''
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    content: "",
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -14,24 +14,24 @@ const ContactForm = () => {
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     // Simulate API call - có thể thay bằng API thực tế sau
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
       setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        address: '',
-        content: ''
+        name: "",
+        phone: "",
+        email: "",
+        address: "",
+        content: "",
       });
     }, 2000);
   };
@@ -40,10 +40,26 @@ const ContactForm = () => {
     return (
       <div className="bg-white p-8 rounded-lg shadow-lg">
         <div className="text-center">
-          <div className="text-6xl mb-4">✅</div>
+          <div className="flex justify-center mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="w-16 h-16 text-green-500"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Cảm ơn bạn!</h3>
           <p className="text-gray-600 mb-4">
-            Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.
+            Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi trong
+            thời gian sớm nhất.
           </p>
           <button
             onClick={() => setSubmitted(false)}
@@ -62,7 +78,9 @@ const ContactForm = () => {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Họ và tên *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Họ và tên *
+            </label>
             <input
               type="text"
               name="name"
@@ -75,7 +93,9 @@ const ContactForm = () => {
           </div>
 
           <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Số điện thoại *
+            </label>
             <input
               type="tel"
               name="phone"
@@ -88,7 +108,9 @@ const ContactForm = () => {
           </div>
 
           <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email *
+            </label>
             <input
               type="email"
               name="email"
@@ -101,7 +123,9 @@ const ContactForm = () => {
           </div>
 
           <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Địa chỉ
+            </label>
             <input
               type="text"
               name="address"
@@ -114,7 +138,9 @@ const ContactForm = () => {
         </div>
 
         <div className="input-group">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Nội dung *</label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Nội dung *
+          </label>
           <textarea
             rows="5"
             name="content"
@@ -137,7 +163,7 @@ const ContactForm = () => {
               Đang gửi...
             </div>
           ) : (
-            'GỬI'
+            "GỬI"
           )}
         </button>
       </form>

@@ -11,38 +11,54 @@ const RegisterForm = ({ onSubmit, loading, error }) => {
     lname: "",
     dob: "",
     gender: "",
-    
+
     // Step 2 - Contact Info
     phone: "",
     email: "",
     password: "",
     confirmPassword: "",
-    
+
     // Step 3 - Address Info
     address: "",
     city: "",
-    country: "Việt Nam"
+    country: "Việt Nam",
   });
 
   const updateFormData = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
   const nextStep = () => {
-    setCurrentStep(prev => prev + 1);
+    setCurrentStep((prev) => prev + 1);
   };
 
   const prevStep = () => {
-    setCurrentStep(prev => prev - 1);
+    setCurrentStep((prev) => prev - 1);
   };
 
+  // Trong RegisterForm.js - sửa hàm handleSubmit
   const handleSubmit = (e) => {
     e.preventDefault();
     if (currentStep === 3) {
-      onSubmit(formData);
+      // Chuẩn hóa dữ liệu để gửi lên backend
+      const registerData = {
+        name: `${formData.fname} ${formData.lname}`, // Kết hợp fname + lname thành name
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+        address: formData.address,
+        // Các trường optional
+        dob: formData.dob,
+        gender: formData.gender,
+        city: formData.city,
+        country: formData.country,
+      };
+
+      console.log("📤 Sending register data:", registerData);
+      onSubmit(registerData);
     }
   };
 
@@ -69,13 +85,11 @@ const RegisterForm = ({ onSubmit, loading, error }) => {
         <p className="text-3xl font-bold text-gray-900 mb-2">
           {getStepTitle()}
         </p>
-        <p className="text-gray-600 mb-4">
-          Bước {currentStep} của 3
-        </p>
+        <p className="text-gray-600 mb-4">Bước {currentStep} của 3</p>
 
         {/* Progress Bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div 
+          <div
             className="bg-amber-600 h-2 rounded-full transition-all duration-300"
             style={{ width: getProgressWidth() }}
           ></div>
@@ -87,22 +101,22 @@ const RegisterForm = ({ onSubmit, loading, error }) => {
             <div
               key={step}
               className={`flex flex-col items-center ${
-                step <= currentStep ? 'text-amber-600' : 'text-gray-400'
+                step <= currentStep ? "text-amber-600" : "text-gray-400"
               }`}
             >
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
                   step <= currentStep
-                    ? 'bg-amber-600 border-amber-600 text-white'
-                    : 'border-gray-300 bg-white'
+                    ? "bg-amber-600 border-amber-600 text-white"
+                    : "border-gray-300 bg-white"
                 }`}
               >
                 {step}
               </div>
               <span className="text-xs mt-1">
-                {step === 1 && 'Cá nhân'}
-                {step === 2 && 'Liên hệ'}
-                {step === 3 && 'Địa chỉ'}
+                {step === 1 && "Cá nhân"}
+                {step === 2 && "Liên hệ"}
+                {step === 3 && "Địa chỉ"}
               </span>
             </div>
           ))}
@@ -149,14 +163,14 @@ const RegisterForm = ({ onSubmit, loading, error }) => {
       {currentStep === 3 && (
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-600">
-            Bằng việc đăng ký, bạn đã đồng ý với{' '}
+            Bằng việc đăng ký, bạn đã đồng ý với{" "}
             <a href="/terms" className="text-amber-600 hover:text-amber-700">
               Điều khoản dịch vụ
-            </a>{' '}
-            và{' '}
+            </a>{" "}
+            và{" "}
             <a href="/privacy" className="text-amber-600 hover:text-amber-700">
               Chính sách bảo mật
-            </a>{' '}
+            </a>{" "}
             của chúng tôi
           </p>
         </div>
