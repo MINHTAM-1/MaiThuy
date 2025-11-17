@@ -13,7 +13,7 @@ const RegisterStep2 = ({ formData, updateFormData, prevStep, nextStep }) => {
 
   return (
     <div className="stage-no-2-content space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="text-fields phone">
           <label htmlFor="phone" className="sr-only">Số điện thoại</label>
           <div className="relative">
@@ -33,27 +33,6 @@ const RegisterStep2 = ({ formData, updateFormData, prevStep, nextStep }) => {
           </div>
         </div>
 
-        <div className="text-fields email">
-          <label htmlFor="email" className="sr-only">Email</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-              📧
-            </span>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              value={formData.email}
-              onChange={(e) => updateFormData('email', e.target.value)}
-              placeholder="abc@maithuycoffee.com"
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              required
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="text-fields password">
           <label htmlFor="password" className="sr-only">Mật khẩu</label>
           <div className="relative">

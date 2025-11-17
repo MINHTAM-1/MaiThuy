@@ -1,191 +1,299 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useCartStore from '../../store/cartStore';
-import useAuthStore from '../../store/authStore';
-import { ordersAPI } from '../../services/api';
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { ordersAPI, paymentAPI } from "../../services/api";
+import PromotionModal from "../../components/promotions/PromotionModal";
+import PromotionDetailModal from "../../components/promotions/PromotionDetailModal";
+import toast from "react-hot-toast";
+import { FaAngleRight, FaMoneyBill, FaQrcode } from "react-icons/fa";
+import ROUTES from "../../routes";
 
 const Checkout = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const { items, getTotalPrice, clearCart } = useCartStore();
-  const { user } = useAuthStore();
-  
-  const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    phone: user?.phone || '',
-    email: user?.email || '',
-    address: '',
-    city: '',
-    district: '',
-    ward: '',
-    note: '',
-    paymentMethod: 'cod'
-  });
+  const { isAuthenticated, user } = useAuth();
+  const cart = location.state?.cart || { items: [] };
+
+  const [selectedPromotion, setSelectedPromotion] = useState(null);
+  const [promoModalOpen, setPromoModalOpen] = useState(false);
+  const [promoDetailId, setPromoDetailId] = useState(null);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const totalItems = cart.items.reduce((sum, i) => sum + i.quantity, 0);
+  const subtotal = cart.items.reduce((sum, i) => sum + i.totalPrice, 0);
+
+  const promotionCode = selectedPromotion?.promotion?.code;
+  const discount = selectedPromotion?.discountAmount || 0;
+  const shippingFee = totalItems > 0 ? 15000 : 0;
+  const totalAmount = subtotal - discount + shippingFee;
+
+  const paymentMethods = [
+    { id: "COD", label: "Thanh toán khi nhận hàng", icon: <FaMoneyBill /> },
+    { id: "VNPAY", label: "Thanh toán VNPAY", icon: <FaQrcode /> },
+    { id: "MOMO", label: "Thanh toán MOMO", icon: <FaQrcode /> },
+  ];
+  const [paymentMethod, setPaymentMethod] = useState("COD");
+  const [note, setNote] = useState("");
+
+  const handleApplyPromo = (promoData, promoId) => {
+    if (promoData === "INFO") {
+      setPromoDetailId(promoId);
+      setDetailModalOpen(true);
+      return;
+    }
+
+    // Nếu nhấn nút đang áp mã thì hủy
+    if (!promoData) {
+      setSelectedPromotion(null);
+      toast.success("Đã hủy mã giảm giá!");
+      return;
+    }
+
+    // Áp mã mới
+    setSelectedPromotion(promoData);
+    toast.success("Đã áp dụng mã giảm giá!");
+    setPromoModalOpen(false);
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!user) {
-      alert('Vui lòng đăng nhập để đặt hàng!');
-      navigate('/login');
+    if (!isAuthenticated) {
+      navigate(ROUTES.LOGIN);
       return;
     }
 
     setLoading(true);
-
     try {
       const orderData = {
-        orderItems: items.map(item => ({
-          product: item.id,
-          name: item.name,
+        items: cart.items.map(item => ({
+          productId: item.productId._id,
+          name: item.productId.name,
+          price: item.finalPrice,
           quantity: item.quantity,
-          price: item.price,
-          image: item.image
+          images: item.productId.images
         })),
         shippingAddress: {
-          fullName: formData.fullName,
-          phone: formData.phone,
-          email: formData.email,
-          address: `${formData.address}, ${formData.ward}, ${formData.district}, ${formData.city}`,
-          city: formData.city,
-          district: formData.district,
-          ward: formData.ward
+          recipientName: user?.name,
+          phone: user?.phone,
+          province: user?.address.province.name,
+          district: user?.address.district.name,
+          ward: user?.address.ward.name,
+          detail: user?.address.detail
         },
-        paymentMethod: formData.paymentMethod,
-        itemsPrice: getTotalPrice(),
-        shippingPrice: 15000,
-        taxPrice: 0,
-        totalPrice: getTotalPrice() + 15000,
-        note: formData.note
+        paymentMethod: paymentMethod,
+        totalAmount: totalAmount,
+        promotionCode: promotionCode,
+        discountAmount: discount,
+        note: note
       };
-
-      const response = await ordersAPI.create(orderData);
-      
-      if (response.data) {
-        alert('Đặt hàng thành công! Cảm ơn bạn đã mua hàng tại MAITHUY COFFEE.');
-        clearCart();
-        navigate(`/orders/${response.data._id}`);
+      const order = await ordersAPI.create(orderData);
+      if (paymentMethod === "MOMO") {
+        const res = await paymentAPI.momo(totalAmount, order?.data.data._id);
+        if (res?.data.payUrl) {
+          window.location.href = res.data.payUrl; // redirect sang trang MOMO
+        } else {
+          throw new Error("Không lấy được link thanh toán MOMO");
+        }
+      } else if (paymentMethod === "VNPAY") {
+        const res = await paymentAPI.vnpay(totalAmount, order?.data.data._id);
+        if (res?.paymentUrl) {
+          window.location.href = res.paymentUrl; // redirect sang trang VNPAY
+        } else {
+          throw new Error("Không lấy được link thanh toán VNPAY");
+        }
+      } else {
+        navigate(`${ROUTES.ORDERRETURN}/${order.data.data._id}`);
       }
-    } catch (error) {
-      console.error('Lỗi khi đặt hàng:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại.');
+
+      toast.success("Đặt hàng thành công!");
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Có lỗi xảy ra khi đặt hàng.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  if (items.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Giỏ hàng trống</h1>
-            <p className="text-gray-600 mb-8">Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.</p>
-            <Link
-              to="/products"
-              className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
-            >
-              Quay lại mua hàng
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const shippingFee = 15000;
-  const totalPrice = getTotalPrice() + shippingFee;
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Thanh toán</h1>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Order Form */}
-          <div className="bg-white rounded-xl shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-6">Thông tin giao hàng</h2>
-            
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Form fields remain the same */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-6">
+        {/* Left column */}
+        <div className="flex-1 flex flex-col gap-4">
+          {/* Thông tin người nhận */}
+          <div
+            className="bg-white p-4 rounded-xl shadow cursor-pointer"
+            onClick={() => navigate("/profile")}
+          >
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold text-lg">Thông tin người nhận</span>
+              <span className="text-gray-400"><FaAngleRight /></span>
+            </div>
+            <div className="border-t border-gray-200 pt-2 flex flex-col lg:flex-row justify-between gap-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Họ và tên *
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  required
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                />
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-blue-500">📍</span>
+                  <span>Họ tên: {user?.name}</span>
+                </div>
+                <span>
+                  Địa chỉ: {user?.address ? `${user.address.detail}, ${user.address.ward.name}, ${user.address.district.name}, ${user.address.province.name}` : ""}
+                </span>
               </div>
-
-              {/* ... other form fields ... */}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-amber-600 text-white py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200 disabled:bg-amber-400 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Đang xử lý...' : 'Hoàn tất đặt hàng'}
-              </button>
-            </form>
+              <div className="flex flex-col justify-center">
+                <span>Email: {user?.email}</span>
+                <span>SĐT: {user?.phone}</span>
+              </div>
+            </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="bg-white rounded-xl shadow-md p-6 h-fit">
-            <h2 className="text-xl font-semibold mb-6">Đơn hàng của bạn</h2>
-            
-            <div className="space-y-4 mb-6">
-              {items.map((item) => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-amber-200 rounded flex items-center justify-center">
-                      <span className="text-sm">☕</span>
-                    </div>
-                    <div>
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-gray-500">Số lượng: {item.quantity}</p>
-                    </div>
+          {/* Sản phẩm */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <span className="font-semibold text-lg">Sản phẩm</span>
+            <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
+              {cart.items.map(item => (
+                <div
+                  key={item.productId._id}
+                  className="flex items-center justify-between py-3 px-1 rounded-lg hover:shadow-sm transition"
+                >
+                  {/* Ảnh */}
+                  <div className="w-16 h-16 flex-shrink-0">
+                    {item.productId.images?.[0] ? (
+                      <img
+                        src={item.productId.images[0]}
+                        alt={item.productId.name}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
+                        <span className="text-gray-400">📦</span>
+                      </div>
+                    )}
                   </div>
-                  <p className="font-semibold">
-                    {(item.price * item.quantity).toLocaleString('vi-VN')}₫
-                  </p>
+
+                  {/* Tên + số lượng */}
+                  <div className="flex flex-col flex-1 px-3">
+                    <span className="font-semibold truncate">{item.productId.name}</span>
+                    <span className="text-gray-500 text-sm">Số lượng: {item.quantity}</span>
+                  </div>
+
+                  {/* Giá 1 sp */}
+                  <div className="text-gray-500 text-sm w-24 text-center">
+                    {item.finalPrice?.toLocaleString("vi-VN")}₫
+                  </div>
+
+                  {/* Tổng */}
+                  <div className="text-right font-bold text-amber-600 w-28">
+                    {item.totalPrice?.toLocaleString("vi-VN")}₫
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="border-t border-gray-200 pt-4 space-y-2">
+          </div>
+        </div>
+
+        {/* Right column */}
+        <div className="w-full lg:w-96 flex flex-col gap-4">
+          {/* Khuyến mãi */}
+          <div className="bg-white p-4 rounded-xl shadow cursor-pointer" onClick={() => setPromoModalOpen(true)}>
+            <div className="flex justify-between items-center mb-2">
+              <span className="font-semibold text-lg">Khuyến mãi</span>
+              <span className="text-gray-400"><FaAngleRight /></span>
+            </div>
+            <div className="border-t border-gray-200 pt-2 mt-2 flex flex-col gap-2"></div>
+            {selectedPromotion?.valid && (
+              <div className="bg-amber-100 text-amber-700 p-2 rounded-lg mb-2">
+                <p>Mã: {selectedPromotion.promotion.code}</p>
+                <p>Giảm: {selectedPromotion.discountAmount.toLocaleString()}₫</p>
+              </div>
+            )}
+          </div>
+
+          {/* Ghi chú */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <span className="font-semibold text-lg">Ghi chú</span>
+            <textarea
+              className="w-full mt-2 p-2 border rounded-lg"
+              placeholder="Nhập ghi chú cho đơn hàng"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+            />
+          </div>
+
+          {/* Phương thức thanh toán */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <span className="font-semibold text-lg">Phương thức thanh toán</span>
+            <div className="border-t border-gray-200 pt-2 mt-2 flex flex-col gap-2">
+              {paymentMethods.map(pm => (
+                <label key={pm.id} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-gray-100">
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value={pm.id}
+                    checked={paymentMethod === pm.id}  // dùng state
+                    onChange={(e) => setPaymentMethod(e.target.value)} // cập nhật state
+                    className="accent-amber-600"
+                  />
+                  {/* Icon */}
+                  <span className="flex items-center gap-1">
+                    {pm.icon}
+                    {pm.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Chi tiết thanh toán */}
+          <div className="bg-white p-4 rounded-xl shadow">
+            <span className="font-semibold text-lg">Chi tiết thanh toán</span>
+            <div className="border-t border-gray-200 pt-2 mt-2 space-y-1">
               <div className="flex justify-between">
-                <span>Tạm tính:</span>
-                <span>{getTotalPrice().toLocaleString('vi-VN')}₫</span>
+                <span>Tổng tiền hàng</span>
+                <span>{subtotal.toLocaleString("vi-VN")}₫</span>
               </div>
               <div className="flex justify-between">
-                <span>Phí giao hàng:</span>
-                <span>{shippingFee.toLocaleString('vi-VN')}₫</span>
+                <span>Phí vận chuyển</span>
+                <span>{shippingFee.toLocaleString("vi-VN")}₫</span>
               </div>
-              <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-2">
-                <span>Tổng cộng:</span>
-                <span className="text-amber-600">
-                  {totalPrice.toLocaleString('vi-VN')}₫
-                </span>
+              {discount > 0 && (
+                <div className="flex justify-between">
+                  <span>Giảm giá</span>
+                  <span>-{discount.toLocaleString("vi-VN")}₫</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg border-t border-gray-200 pt-2">
+                <span>Tổng thanh toán</span>
+                <span className="text-amber-600">{totalAmount.toLocaleString("vi-VN")}₫</span>
               </div>
             </div>
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="mt-4 w-full bg-amber-600 text-white py-3 rounded-lg font-semibold"
+            >
+              {loading ? "Đang xử lý..." : "Xác nhận thanh toán"}
+            </button>
           </div>
         </div>
       </div>
+
+      <PromotionModal
+        open={promoModalOpen}
+        onClose={() => setPromoModalOpen(false)}
+        orderValue={subtotal}
+        onApply={handleApplyPromo}
+        appliedPromotion={selectedPromotion}
+      />
+      <PromotionDetailModal
+        open={detailModalOpen}
+        id={promoDetailId}
+        onClose={() => setDetailModalOpen(false)}
+      />
     </div>
+
   );
 };
 

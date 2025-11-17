@@ -1,6 +1,7 @@
 import axios from "axios";
+import ResetPassword from "../pages/auth/ResetPassword";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:9001";
 
 // Tạo instance axios
 const api = axios.create({
@@ -46,63 +47,68 @@ export const authAPI = {
   login: (credentials) => api.post("/auth/login", credentials),
   register: (userData) => api.post("/auth/register", userData),
   getProfile: () => api.get("/auth/profile"),
+  forgotPassword: (email) => api.post("/auth/forgot-password", email),
+  validateResetCode: (payload) => api.post("/auth/validate-reset-code", payload),
+  resetPassword: (payload) => api.post("/auth/reset-password", payload)
+};
+
+// Categories API
+export const categoryAPI = {
+  getAll: () => api.get("/categories"),
+  getById: (id) => api.get(`/categories/${id}`),
 };
 
 // Products API
 export const productsAPI = {
   getAll: (params = {}) => api.get("/products", { params }),
   getById: (id) => api.get(`/products/${id}`),
-  search: (query, params = {}) =>
-    api.get("/products/search", { params: { q: query, ...params } }),
-  getByCategory: (category, params = {}) =>
-    api.get(`/products/category/${category}`, { params }),
-  getFeatured: (limit = 8) =>
-    api.get("/products/featured", { params: { limit } }),
-  getCategories: () => api.get("/products/categories"),
-  create: (productData) => api.post("/products", productData),
-  update: (id, productData) => api.put(`/products/${id}`, productData),
-  delete: (id) => api.delete(`/products/${id}`),
+  getByCategoryId: (categoryId, params = {}) => api.get(`/products/category/${categoryId}`, { params }),
 };
 
 // Cart API
 export const cartAPI = {
   get: () => api.get("/cart"),
-  add: (productId, quantity = 1) =>
-    api.post("/cart/add", { productId, quantity }),
-  update: (productId, quantity) =>
-    api.put(`/cart/update/${productId}`, { quantity }),
-  remove: (productId) => api.delete(`/cart/remove/${productId}`),
+  addItem: (productId) => api.post("/cart", {productId, quantity: 1}),
+  updateItem: (productId, quantity) => api.patch("/cart", {item :{ productId, quantity }}),
   clear: () => api.delete("/cart/clear"),
+};
+
+export const promotionsAPI = {
+  getAll: () => api.get("/promotions"),
+  getById: (id) => api.get(`/promotions/${id}`),
+  checkValidate: (code, orderValue) => api.post("/promotions/validate", {code, orderValue}),
 };
 
 // Orders API
 export const ordersAPI = {
-  create: (orderData) => api.post("/orders", orderData),
-  getAll: (params = {}) => api.get("/orders", { params }),
+  getAll: () => api.get("/orders"),
   getById: (orderId) => api.get(`/orders/${orderId}`),
-  cancel: (orderId) => api.put(`/orders/${orderId}/cancel`),
+  create: (orderData) => api.post("/orders", orderData),
+  cancel: (orderId) => api.patch(`/orders/${orderId}/cancel`),
+};
+
+export const paymentAPI = {
+  vnpay: (amount, orderId) => api.post("/payment/vnpay", {amount, orderId}),
+  momo: (amount, orderId) => api.post("/payment/momo", {amount, orderId}),
 };
 
 // Reviews API
 export const reviewsAPI = {
-  create: (reviewData) => api.post("/reviews", reviewData),
-  getByProduct: (productId, params = {}) =>
-    api.get(`/reviews/product/${productId}`, { params }),
-  getStats: (productId) => api.get(`/reviews/product/${productId}/stats`),
-  getUserReviews: (params = {}) => api.get("/reviews/my-reviews", { params }),
-  markHelpful: (reviewId) => api.put(`/reviews/${reviewId}/helpful`),
-  update: (reviewId, updateData) => api.put(`/reviews/${reviewId}`, updateData),
-  delete: (reviewId) => api.delete(`/reviews/${reviewId}`),
+  create: (data) => api.post("/reviews", data),
+  update: (id, data) => api.put(`/reviews/${id}`, data),
+  getByOrder: (orderId) => api.get(`/reviews/order/${orderId}`),
+  getByProduct: (productId) => api.get(`/reviews-by-product/${productId}`),
 };
 
 // Users API
 export const usersAPI = {
   getProfile: () => api.get("/users/profile"),
   updateProfile: (profileData) => api.put("/users/profile", profileData),
-  changePassword: (passwordData) =>
-    api.put("/users/change-password", passwordData),
-  getStats: () => api.get("/users/stats"),
-  getOrderHistory: (params = {}) => api.get("/users/orders", { params }),
+  changePassword: (data) => api.put("/users/change-password", data),
+};
+
+export const contactAPI = {
+  create: (data) => api.post("/contact", data),
 };
 
 // Admin API

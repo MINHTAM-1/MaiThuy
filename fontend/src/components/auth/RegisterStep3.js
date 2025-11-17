@@ -1,101 +1,156 @@
+import { useEffect, useState } from "react";
+
 const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+  // Load tỉnh khi mở Step 3
+  useEffect(() => {
+    fetch("https://vn-public-apis.fpo.vn/provinces/getAll?limit=-1")
+      .then(res => res.json())
+      .then(data => setProvinces(data.data.data ?? []))
+      .catch(err => console.error("Load provinces error:", err));
+  }, []);
+
+  // Khi chọn tỉnh → load quận
+  useEffect(() => {
+    if (!formData.province?.code) return;
+
+    fetch(
+      `https://vn-public-apis.fpo.vn/districts/getByProvince?provinceCode=${formData.province.code}&limit=-1`
+    )
+      .then(res => res.json())
+      .then(data => {
+        setDistricts(data.data.data ?? []);
+        setWards([]); // reset phường
+        updateFormData("district", { code: "", name: "" });
+        updateFormData("ward", { code: "", name: "" });
+      })
+      .catch(err => console.error("Load districts error:", err));
+  }, [formData.province]);
+
+  // Khi chọn quận → load phường
+  useEffect(() => {
+    if (!formData.district?.code) return;
+
+    fetch(
+      `https://vn-public-apis.fpo.vn/wards/getByDistrict?districtCode=${formData.district.code}&limit=-1`
+    )
+      .then(res => res.json())
+      .then(data => {
+        setWards(data.data.data ?? []);
+        updateFormData("ward", { code: "", name: "" });
+      })
+      .catch(err => console.error("Load wards error:", err));
+  }, [formData.district]);
+
   return (
     <div className="stage-no-3-content space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="text-fields address">
-          <label htmlFor="address" className="sr-only">Địa chỉ</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-              🏠
-            </span>
-            <input
-              type="text"
-              name="address"
-              id="address"
-              value={formData.address}
-              onChange={(e) => updateFormData('address', e.target.value)}
-              placeholder="1 Đ.Cộng Hòa, Tân Bình"
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              required
-              autoComplete="on"
-              disabled={loading}
-            />
-          </div>
-        </div>
-
-        <div className="text-fields city">
-          <label htmlFor="city" className="sr-only">Thành phố</label>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-              🏙️
-            </span>
-            <input
-              type="text"
-              name="city"
-              id="city"
-              value={formData.city}
-              onChange={(e) => updateFormData('city', e.target.value)}
-              placeholder="Thành phố Hồ Chí Minh"
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              required
-              autoComplete="on"
-              disabled={loading}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="text-fields country">
-        <label htmlFor="country" className="sr-only">Quốc gia</label>
-        <div className="relative">
-          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl">
-            🌎
-          </span>
+        {/* Quốc gia */}
+        <div>
+          <label className="block text-gray-700 mb-1">Quốc gia</label>
           <input
             type="text"
-            name="country"
-            id="country"
-            value={formData.country}
-            onChange={(e) => updateFormData('country', e.target.value)}
-            placeholder="Việt Nam"
-            className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            required
-            autoComplete="country"
-            disabled={loading}
+            readOnly
+            value="Việt Nam"
+            className="w-full px-4 py-3 border rounded-lg bg-gray-100 text-gray-700"
           />
+        </div>
+
+        {/* Tỉnh / Thành phố */}
+        <div>
+          <label className="block text-gray-700 mb-1">Tỉnh / Thành phố</label>
+          <select
+            value={formData.province?.code || ""}
+            onChange={(e) => {
+              const selected = provinces.find((p) => p.code === e.target.value);
+              updateFormData("province", selected || { code: "", name: "" });
+            }}
+            className="w-full px-4 py-3 border rounded-lg"
+            required
+          >
+            <option value="">Chọn tỉnh</option>
+            {provinces.map((p) => (
+              <option key={p.code} value={p.code}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Quận / Huyện */}
+        <div>
+          <label className="block text-gray-700 mb-1">Quận / Huyện</label>
+          <select
+            value={formData.district?.code || ""}
+            onChange={(e) => {
+              const selected = districts.find((d) => d.code === e.target.value);
+              updateFormData("district", selected || { code: "", name: "" });
+            }}
+            className="w-full px-4 py-3 border rounded-lg"
+            required
+            disabled={!formData.province?.code}
+          >
+            <option value="">Chọn quận / huyện</option>
+            {districts.map((d) => (
+              <option key={d.code} value={d.code}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Phường / Xã */}
+        <div>
+          <label className="block text-gray-700 mb-1">Phường / Xã</label>
+          <select
+            value={formData.ward?.code || ""}
+            onChange={(e) => {
+              const selected = wards.find((w) => w.code === e.target.value);
+              updateFormData("ward", selected || { code: "", name: "" });
+            }}
+            className="w-full px-4 py-3 border rounded-lg"
+            required
+            disabled={!formData.district?.code}
+          >
+            <option value="">Chọn phường / xã</option>
+            {wards.map((w) => (
+              <option key={w.code} value={w.code}>
+                {w.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
+      <div>
+        <label className="block text-gray-700 mb-1">Địa chỉ cụ thể (Số nhà,..)</label>
+        <input
+          value={formData.detail}
+          onChange={(e) => updateFormData("detail", e.target.value)}
+          className="w-full px-4 py-3 border rounded-lg text-gray-700"
+        />
+      </div>
+
+      {/* Button */}
       <div className="pagination-btn flex justify-between pt-6">
         <button
           type="button"
           onClick={prevStep}
           disabled={loading}
-          className={`px-8 py-3 rounded-lg font-semibold transition-colors duration-200 ${
-            loading 
-              ? 'bg-gray-300 cursor-not-allowed text-gray-500' 
-              : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-          }`}
+          className="px-8 py-3 rounded-lg bg-gray-300 hover:bg-gray-400"
         >
           Quay lại
         </button>
+
         <button
           type="submit"
           disabled={loading}
-          className={`px-8 py-3 rounded-lg font-semibold transition-colors duration-200 ${
-            loading 
-              ? 'bg-amber-400 cursor-not-allowed text-white' 
-              : 'bg-amber-600 text-white hover:bg-amber-700'
-          }`}
+          className="px-8 py-3 rounded-lg bg-amber-600 text-white hover:bg-amber-700"
         >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-              Đang đăng ký...
-            </div>
-          ) : (
-            'Đăng kí'
-          )}
+          {loading ? "Đang đăng ký..." : "Đăng ký"}
         </button>
       </div>
     </div>

@@ -1,12 +1,13 @@
 import { useState } from 'react';
+import { contactAPI } from '../../services/api';
+import toast from 'react-hot-toast';
+import { FaCheck } from 'react-icons/fa';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
     email: '',
-    address: '',
-    content: ''
+    message: ''
   });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -20,27 +21,57 @@ const ContactForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Client-side validation để tránh spam request
+    if (formData.name.trim().length < 10) {
+      toast.error("Họ tên phải có ít nhất 10 ký tự");
+      return;
+    }
+
+    if (formData.message.trim().length < 50) {
+      toast.error("Nội dung phải có ít nhất 50 ký tự");
+      return;
+    }
+
+    if (formData.message.trim().length > 500) {
+      toast.error("Nội dung không được vượt quá 500 ký tự");
+      return;
+    }
+
     setLoading(true);
-    
-    // Simulate API call - có thể thay bằng API thực tế sau
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await contactAPI.create({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message
+      });
+
       setSubmitted(true);
       setFormData({
         name: '',
-        phone: '',
         email: '',
-        address: '',
-        content: ''
+        message: '',
       });
-    }, 2000);
+
+      toast.success("Gửi thành công");
+
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Gửi thất bại, vui lòng thử lại.");
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   if (submitted) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-lg">
         <div className="text-center">
-          <div className="text-6xl mb-4">✅</div>
+          <div className="flex justify-center text-green-500 text-[5rem] mb-4">
+            <FaCheck />
+          </div>
           <h3 className="text-2xl font-bold text-gray-900 mb-2">Cảm ơn bạn!</h3>
           <p className="text-gray-600 mb-4">
             Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi trong thời gian sớm nhất.
@@ -75,19 +106,6 @@ const ContactForm = () => {
           </div>
 
           <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="(+84) 816232452"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              required
-            />
-          </div>
-
-          <div className="input-group">
             <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
             <input
               type="email"
@@ -99,26 +117,14 @@ const ContactForm = () => {
               required
             />
           </div>
-
-          <div className="input-group">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Việt Nam"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            />
-          </div>
         </div>
 
         <div className="input-group">
           <label className="block text-sm font-medium text-gray-700 mb-2">Nội dung *</label>
           <textarea
             rows="5"
-            name="content"
-            value={formData.content}
+            name="message"
+            value={formData.message}
             onChange={handleChange}
             placeholder="Nội dung của bạn"
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 resize-vertical"

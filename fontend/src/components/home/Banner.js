@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ROUTES from '../../routes';
 const Banner = () => {
   return (
     <section
@@ -19,11 +20,11 @@ const Banner = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-left">
-           <Link to="/products">
-    <button className="bg-white text-amber-800 px-8 py-3 rounded-lg font-semibold hover:bg-amber-50 transition-colors duration-200">
-      Đặt Hàng Ngay !
-    </button>
-  </Link>
+            <Link to={ROUTES.PRODUCTS}>
+              <button className="bg-white text-amber-800 px-8 py-3 rounded-lg font-semibold hover:bg-amber-50 transition-colors duration-200">
+                Đặt Hàng Ngay !
+              </button>
+            </Link>
             <button className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-amber-800 transition-colors duration-200">
               Giảm 75%
             </button>

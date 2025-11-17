@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+import ROUTES from "../../routes";
+
 const About = () => {
+   const navigate = useNavigate();
   const features = [
     {
       icon: "🌱",
@@ -196,10 +200,12 @@ const About = () => {
           <h3 className="text-2xl font-bold text-gray-900 mb-4">Sẵn sàng khám phá hương vị?</h3>
           <p className="text-gray-600 mb-6">Trải nghiệm sự khác biệt từ MAITHUY COFFEE ngay hôm nay</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors shadow-lg">
+            <button onClick={() => navigate(ROUTES.PRODUCTS)}
+            className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors shadow-lg">
               Xem sản phẩm
             </button>
-            <button className="border-2 border-amber-600 text-amber-600 px-8 py-3 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
+            <button onClick={() => navigate(ROUTES.CONTACT)}
+            className="border-2 border-amber-600 text-amber-600 px-8 py-3 rounded-lg font-semibold hover:bg-amber-50 transition-colors">
               Liên hệ ngay
             </button>
           </div>

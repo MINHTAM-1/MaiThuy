@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+import ROUTES from "../../routes";
+
 const About = () => {
+  const navigate = useNavigate();
   return (
     <section id="about" className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -46,7 +50,8 @@ const About = () => {
               </div>
             </div>
 
-            <button className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200 mt-6">
+            <button onClick={() => navigate(ROUTES.CONTACT)}
+            className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200 mt-6">
               Tìm hiểu thêm
             </button>
           </div>

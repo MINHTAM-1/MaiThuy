@@ -1,68 +1,71 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { usersAPI } from '../../services/api';
-import useAuthStore from '../../store/authStore';
+import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Profile = () => {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
   const [user, setUser] = useState(null);
-  const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const { updateUser } = useAuthStore();
+
+  // Password states
+  const [currentPwd, setCurrentPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
+  const [confirmPwd, setConfirmPwd] = useState("");
 
   useEffect(() => {
     fetchUserData();
-    fetchUserOrders();
   }, []);
 
   const fetchUserData = async () => {
     try {
       const response = await usersAPI.getProfile();
-      if (response.data) {
-        setUser(response.data);
-      }
-    } catch (error) {
-      console.error('Lỗi khi lấy thông tin user:', error);
-    }
-  };
-
-  const fetchUserOrders = async () => {
-    try {
-      const response = await usersAPI.getOrderHistory();
-      if (response.data) {
-        setOrders(response.data);
-      }
-    } catch (error) {
-      console.error('Lỗi khi lấy đơn hàng:', error);
+      if (response.data) setUser(response.data.data);
+    } catch (err) {
+      console.error("Lỗi khi lấy thông tin user:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!user) return;
+
     try {
-      const response = await usersAPI.updateProfile(user);
-      if (response.data) {
-        updateUser(response.data);
-        setIsEditing(false);
-        alert('Thông tin đã được cập nhật!');
-      }
-    } catch (error) {
-      console.error('Lỗi khi cập nhật thông tin:', error);
-      alert(error.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thông tin.');
+      const payload = {
+        name: user.name,
+        phone: user.phone,
+        address: user.address,
+      };
+      await usersAPI.updateProfile(payload);
+      setIsEditing(false);
+      fetchUserData();
+      toast.success("Thông tin đã được cập nhật!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Lỗi lưu");
     }
   };
 
-  const getStatusText = (status) => {
-    const statusMap = {
-      'pending': { text: 'Chờ xử lý', color: 'bg-yellow-100 text-yellow-800' },
-      'confirmed': { text: 'Đã xác nhận', color: 'bg-blue-100 text-blue-800' },
-      'shipping': { text: 'Đang giao hàng', color: 'bg-blue-100 text-blue-800' },
-      'delivered': { text: 'Đã giao hàng', color: 'bg-green-100 text-green-800' },
-      'cancelled': { text: 'Đã hủy', color: 'bg-red-100 text-red-800' }
-    };
-    return statusMap[status] || { text: status, color: 'bg-gray-100 text-gray-800' };
+  const handleChangePassword = async () => {
+    if (!currentPwd || !newPwd || !confirmPwd) {
+      toast.error("Vui lòng điền đủ thông tin");
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      toast.error("Mật khẩu mới và xác nhận mật khẩu không trùng khớp");
+      return;
+    }
+
+    try {
+      await usersAPI.changePassword({ currentPassword: currentPwd, newPassword: newPwd, confirmPassword: confirmPwd });
+      toast.success("Đổi mật khẩu thành công!");
+      setCurrentPwd("");
+      setNewPwd("");
+      setConfirmPwd("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Lỗi khi đổi mật khẩu");
+    }
   };
 
   if (loading) {
@@ -122,16 +125,7 @@ const Profile = () => {
                 >
                   📝 Thông tin cá nhân
                 </button>
-                <button
-                  onClick={() => setActiveTab('orders')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
-                    activeTab === 'orders'
-                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  🛒 Đơn hàng của tôi
-                </button>
+                
                 <button
                   onClick={() => setActiveTab('password')}
                   className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-colors ${
@@ -151,203 +145,199 @@ const Profile = () => {
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Thông tin cá nhân</h2>
-                  {!isEditing ? (
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
-                    >
-                      Chỉnh sửa
-                    </button>
-                  ) : (
-                    <div className="space-x-2">
-                      <button
-                        onClick={() => {
-                          setIsEditing(false);
-                          fetchUserData(); // Reset data
-                        }}
-                        className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
-                      >
-                        Hủy
-                      </button>
-                      <button
-                        onClick={handleSave}
-                        className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
-                      >
-                        Lưu thay đổi
-                      </button>
-                    </div>
-                  )}
-                </div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Thông tin cá nhân</h2>
+        {!isEditing ? (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+          >
+            Chỉnh sửa
+          </button>
+        ) : (
+          <div className="space-x-2">
+            <button
+              onClick={() => {
+                setIsEditing(false);
+                fetchUserData(); // reset data
+              }}
+              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              onClick={handleSave}
+              className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              Lưu thay đổi
+            </button>
+          </div>
+        )}
+      </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Họ và tên
-                    </label>
-                    <input
-                      type="text"
-                      value={user.name || ''}
-                      onChange={(e) => setUser({...user, name: e.target.value})}
-                      disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Họ và tên
+          </label>
+          <input
+            type="text"
+            value={user.name || ''}
+            onChange={(e) => setUser({ ...user, name: e.target.value })}
+            disabled={!isEditing}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          />
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={user.email || ''}
-                      disabled
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
-                    />
-                  </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Email
+          </label>
+          <input
+            type="email"
+            value={user.email || ''}
+            disabled
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
+          />
+        </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Số điện thoại
-                    </label>
-                    <input
-                      type="tel"
-                      value={user.phone || ''}
-                      onChange={(e) => setUser({...user, phone: e.target.value})}
-                      disabled={!isEditing}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Số điện thoại
+          </label>
+          <input
+            type="tel"
+            value={user.phone || ''}
+            onChange={(e) => setUser({ ...user, phone: e.target.value })}
+            disabled={!isEditing}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+          />
+        </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Địa chỉ
-                    </label>
-                    <textarea
-                      value={user.address || ''}
-                      onChange={(e) => setUser({...user, address: e.target.value})}
-                      disabled={!isEditing}
-                      rows="3"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
+        {/* Địa chỉ nâng cao */}
+        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tỉnh/Thành phố
+            </label>
+            <input
+              type="text"
+              value={user.address?.province?.name || ''}
+              onChange={(e) =>
+                setUser({
+                  ...user,
+                  address: { ...user.address, province: { ...user.address?.province, name: e.target.value } },
+                })
+              }
+              disabled={!isEditing}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Quận/Huyện
+            </label>
+            <input
+              type="text"
+              value={user.address?.district?.name || ''}
+              onChange={(e) =>
+                setUser({
+                  ...user,
+                  address: { ...user.address, district: { ...user.address?.district, name: e.target.value } },
+                })
+              }
+              disabled={!isEditing}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phường/Xã
+            </label>
+            <input
+              type="text"
+              value={user.address?.ward?.name || ''}
+              onChange={(e) =>
+                setUser({
+                  ...user,
+                  address: { ...user.address, ward: { ...user.address?.ward, name: e.target.value } },
+                })
+              }
+              disabled={!isEditing}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Số nhà, tên đường
+            </label>
+            <input
+              type="text"
+              value={user.address?.detail || ''}
+              onChange={(e) =>
+                setUser({
+                  ...user,
+                  address: { ...user.address, detail: e.target.value },
+                })
+              }
+              disabled={!isEditing}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:text-gray-500 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
 
-            {/* Orders Tab */}
-            {activeTab === 'orders' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Đơn hàng của tôi</h2>
-                
-                {orders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="text-6xl mb-4">📦</div>
-                    <p className="text-gray-500 text-lg mb-4">Bạn chưa có đơn hàng nào.</p>
-                    <Link
-                      to="/products"
-                      className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
-                    >
-                      Mua sắm ngay
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {orders.map((order) => {
-                      const statusInfo = getStatusText(order.orderStatus);
-                      return (
-                        <div key={order._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <h3 className="font-semibold text-gray-900">Đơn hàng #{order._id.slice(-8).toUpperCase()}</h3>
-                              <p className="text-sm text-gray-500">
-                                Ngày đặt: {new Date(order.createdAt).toLocaleDateString('vi-VN')}
-                              </p>
-                            </div>
-                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusInfo.color}`}>
-                              {statusInfo.text}
-                            </span>
-                          </div>
-                          
-                          <div className="mb-3">
-                            <p className="text-sm text-gray-600 mb-2">Sản phẩm:</p>
-                            {order.orderItems.slice(0, 2).map((item, index) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span>{item.name} x {item.quantity}</span>
-                                <span>{(item.price * item.quantity).toLocaleString('vi-VN')}₫</span>
-                              </div>
-                            ))}
-                            {order.orderItems.length > 2 && (
-                              <p className="text-sm text-gray-500 mt-1">
-                                +{order.orderItems.length - 2} sản phẩm khác
-                              </p>
-                            )}
-                          </div>
-                          
-                          <div className="flex justify-between items-center border-t pt-3">
-                            <div>
-                              <p className="text-sm text-gray-600">Địa chỉ giao hàng:</p>
-                              <p className="text-sm font-medium">{order.shippingAddress?.address}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-lg font-bold text-amber-600">
-                                {order.totalPrice.toLocaleString('vi-VN')}₫
-                              </p>
-                              <Link 
-                                to={`/orders/${order._id}`}
-                                className="text-amber-600 hover:text-amber-700 text-sm font-medium"
-                              >
-                                Xem chi tiết
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             )}
 
             {/* Password Tab */}
-            {activeTab === 'password' && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Đổi mật khẩu</h2>
-                <div className="max-w-md space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mật khẩu hiện tại
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mật khẩu mới
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Xác nhận mật khẩu mới
-                    </label>
-                    <input
-                      type="password"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                    />
-                  </div>
-                  <button className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors">
-                    Đổi mật khẩu
-                  </button>
-                </div>
-              </div>
-            )}
+            {activeTab === "password" && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Đổi mật khẩu</h2>
+          <div className="max-w-md space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mật khẩu hiện tại
+              </label>
+              <input
+                type="password"
+                value={currentPwd}
+                onChange={(e) => setCurrentPwd(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Mật khẩu mới
+              </label>
+              <input
+                type="password"
+                value={newPwd}
+                onChange={(e) => setNewPwd(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Xác nhận mật khẩu mới
+              </label>
+              <input
+                type="password"
+                value={confirmPwd}
+                onChange={(e) => setConfirmPwd(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+            <button
+              onClick={handleChangePassword}
+              className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
+            >
+              Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+      )}
+    
           </div>
         </div>
       </div>
