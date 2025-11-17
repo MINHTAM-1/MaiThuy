@@ -28,7 +28,7 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
         updateFormData("ward", { code: "", name: "" });
       })
       .catch(err => console.error("Load districts error:", err));
-  }, [formData.province]);
+  }, [formData.province, updateFormData]);
 
   // Khi chọn quận → load phường
   useEffect(() => {
@@ -43,7 +43,7 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
         updateFormData("ward", { code: "", name: "" });
       })
       .catch(err => console.error("Load wards error:", err));
-  }, [formData.district]);
+  }, [formData.district, updateFormData]);
 
   return (
     <div className="stage-no-3-content space-y-6">

@@ -1,5 +1,4 @@
 import axios from "axios";
-import ResetPassword from "../pages/auth/ResetPassword";
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:9001";
 

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { cartAPI, categoryAPI, productsAPI } from '../../services/api';
-import { useAuth } from '../../contexts/AuthContext';
+import { categoryAPI, productsAPI } from '../../services/api';
 import ProductGrid from '../../components/products/ProductGrid';
 import toast from 'react-hot-toast';
 import { useDebounce } from 'use-debounce';

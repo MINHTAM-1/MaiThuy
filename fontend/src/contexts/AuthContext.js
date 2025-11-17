@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import { usersAPI } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import ROUTES from '../routes';
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Get profile error:', error.response?.data?.message);
     }
-  }, [logout]);
+  }, []);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
