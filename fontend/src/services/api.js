@@ -110,27 +110,4 @@ export const contactAPI = {
   create: (data) => api.post("/contact", data),
 };
 
-// Admin API
-export const adminAPI = {
-  // Dashboard
-  getDashboardStats: () => api.get("/admin/dashboard/stats"),
-  getRevenueStats: (params = {}) =>
-    api.get("/admin/dashboard/revenue", { params }),
-  getTopProducts: (params = {}) =>
-    api.get("/admin/dashboard/top-products", { params }),
-  getUserStats: () => api.get("/admin/dashboard/user-stats"),
-
-  // Orders
-  getAllOrders: (params = {}) => api.get("/admin/orders", { params }),
-  updateOrderStatus: (orderId, status) =>
-    api.put(`/admin/orders/${orderId}/status`, { status }),
-  updatePaymentStatus: (orderId, paymentStatus) =>
-    api.put(`/admin/orders/${orderId}/payment-status`, { paymentStatus }),
-
-  // Reviews
-  getAllReviews: (params = {}) => api.get("/admin/reviews", { params }),
-  deleteReview: (reviewId) => api.delete(`/admin/reviews/${reviewId}`),
-  getReviewStats: () => api.get("/admin/reviews/stats"),
-};
-
 export default api;
