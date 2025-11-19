@@ -5,6 +5,7 @@ import RegisterStep2 from "./RegisterStep2";
 import RegisterStep3 from "./RegisterStep3";
 import { authAPI } from "../../services/api";
 import ROUTES from "../../routes";
+import { useCallback } from "react";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -23,27 +24,19 @@ const RegisterForm = () => {
     phone: "",
     password: "",
     confirmPassword: "",
-
-    // Step 3 
-    province: "",
-    district: "",
-    ward: "",
-    detail: "",
   });
 
-
-  const updateFormData = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (error) setError("");
-  };
+  const updateFormData = useCallback((key, value) => {
+  setFormData(prev => ({ ...prev, [key]: value }));
+  if (error) setError("");
+}, []);
 
   const nextStep = () => setCurrentStep((s) => s + 1);
   const prevStep = () => setCurrentStep((s) => s - 1);
 
-  // SUBMIT đăng ký (khi ở step 3)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (currentStep !== 3) return;
+    if (currentStep !== 2) return;
 
     setLoading(true);
     setError("");
@@ -54,12 +47,6 @@ const RegisterForm = () => {
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
-        address: {
-          province: formData.province || { code: "", name: "" },
-          district: formData.district || { code: "", name: "" },
-          ward: formData.ward || { code: "", name: "" },
-          detail: formData.detail || "",
-        },
       };
 
       const response = await authAPI.register(payload);
@@ -101,7 +88,6 @@ const RegisterForm = () => {
     switch (currentStep) {
       case 1: return "Thông tin cá nhân";
       case 2: return "Thông tin liên lạc";
-      case 3: return "Địa chỉ";
       default: return "Đăng ký tài khoản";
     }
   };
@@ -112,13 +98,13 @@ const RegisterForm = () => {
         <p className="text-3xl font-bold text-gray-900 mb-2">
           {getStepTitle()}
         </p>
-        <p className="text-gray-600 mb-4">Bước {currentStep} của 3</p>
+        <p className="text-gray-600 mb-4">Bước {currentStep} của 2</p>
 
         {/* Progress bar */}
         <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
           <div
             className="bg-amber-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(currentStep / 3) * 100}%` }}
+            style={{ width: `${(currentStep / 2) * 100}%` }}
           ></div>
         </div>
       </div>
@@ -145,22 +131,13 @@ const RegisterForm = () => {
             formData={formData}
             updateFormData={updateFormData}
             prevStep={prevStep}
-            nextStep={nextStep}
-          />
-        )}
-
-        {currentStep === 3 && (
-          <RegisterStep3
-            formData={formData}
-            updateFormData={updateFormData}
-            prevStep={prevStep}
             loading={loading}
           />
         )}
+
       </div>
 
-      {/* Footer */}
-      {currentStep === 3 && (
+      {currentStep === 2 && (
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-600">
             Bằng việc đăng ký, bạn đồng ý với{" "}
@@ -168,15 +145,6 @@ const RegisterForm = () => {
             và{" "}
             <a href="/privacy" className="text-amber-600 hover:text-amber-700">Chính sách bảo mật</a>
           </p>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full mt-4 py-3 rounded-lg font-semibold 
-              ${loading ? "bg-gray-400" : "bg-amber-600 hover:bg-amber-700 text-white"}`}
-          >
-            {loading ? "Đang tạo tài khoản..." : "Hoàn tất đăng ký"}
-          </button>
         </div>
       )}
     </form>

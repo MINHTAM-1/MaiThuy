@@ -21,14 +21,9 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
       `https://vn-public-apis.fpo.vn/districts/getByProvince?provinceCode=${formData.province.code}&limit=-1`
     )
       .then(res => res.json())
-      .then(data => {
-        setDistricts(data.data.data ?? []);
-        setWards([]); // reset phường
-        updateFormData("district", { code: "", name: "" });
-        updateFormData("ward", { code: "", name: "" });
-      })
+      .then(data => setDistricts(data.data.data ?? []))
       .catch(err => console.error("Load districts error:", err));
-  }, [formData.province, updateFormData]);
+  }, [formData.province?.code]);
 
   // Khi chọn quận → load phường
   useEffect(() => {
@@ -38,12 +33,9 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
       `https://vn-public-apis.fpo.vn/wards/getByDistrict?districtCode=${formData.district.code}&limit=-1`
     )
       .then(res => res.json())
-      .then(data => {
-        setWards(data.data.data ?? []);
-        updateFormData("ward", { code: "", name: "" });
-      })
+      .then(data => setWards(data.data.data ?? []))
       .catch(err => console.error("Load wards error:", err));
-  }, [formData.district, updateFormData]);
+  }, [formData.district?.code]);
 
   return (
     <div className="stage-no-3-content space-y-6">
@@ -65,11 +57,13 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
           <select
             value={formData.province?.code || ""}
             onChange={(e) => {
-              const selected = provinces.find((p) => p.code === e.target.value);
-              updateFormData("province", selected || { code: "", name: "" });
+              const selected = provinces.find(p => p.code === e.target.value) || { code: "", name: "" };
+              updateFormData("province", selected);
+              // reset district + ward khi đổi province
+              updateFormData("district", { code: "", name: "" });
+              updateFormData("ward", { code: "", name: "" });
             }}
             className="w-full px-4 py-3 border rounded-lg"
-            required
           >
             <option value="">Chọn tỉnh</option>
             {provinces.map((p) => (
@@ -86,8 +80,10 @@ const RegisterStep3 = ({ formData, updateFormData, prevStep, loading }) => {
           <select
             value={formData.district?.code || ""}
             onChange={(e) => {
-              const selected = districts.find((d) => d.code === e.target.value);
-              updateFormData("district", selected || { code: "", name: "" });
+              const selected = districts.find(d => d.code === e.target.value) || { code: "", name: "" };
+              updateFormData("district", selected);
+              // reset ward khi đổi district
+              updateFormData("ward", { code: "", name: "" });
             }}
             className="w-full px-4 py-3 border rounded-lg"
             required

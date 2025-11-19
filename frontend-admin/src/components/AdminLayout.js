@@ -1,6 +1,6 @@
-import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import ROUTES from '../routes';
 
 const AdminLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -8,14 +8,19 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
 
   const adminMenuItems = [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' },
-    { path: '/admin/products', label: 'Quản lý Sản phẩm', icon: '🛍️' },
-    { path: '/admin/orders', label: 'Quản lý Đơn hàng', icon: '📦' },
+    { path: ROUTES.HOME, label: 'Dashboard', icon: '📊' },
+    { path: ROUTES.ORDERS, label: 'Đơn hàng', icon: '📦' },
+    { path: ROUTES.CATEGORIES, label: 'Loại Sản phẩm', icon: '🗂️' },
+    { path: ROUTES.PRODUCTS, label: 'Sản phẩm', icon: '🛍️' },
+    { path: ROUTES.PROMOTIONS, label: 'Khuyến mãi', icon: '🎁' },
+    { path: ROUTES.REVIEWS, label: 'Đánh giá', icon: '⭐' },
+    { path: ROUTES.CONTACTS, label: 'Liên hệ', icon: '📧' },
+
   ];
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate(ROUTES.LOGIN);
   };
 
   return (
@@ -27,17 +32,16 @@ const AdminLayout = ({ children }) => {
             <span className="text-2xl">☕</span>
             <span className="text-xl font-bold">MAITHUY Admin</span>
           </Link>
-          
+
           <nav className="space-y-2">
             {adminMenuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  location.pathname === item.path
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${location.pathname === item.path
                     ? 'bg-amber-900 text-white'
                     : 'text-amber-100 hover:bg-amber-700'
-                }`}
+                  }`}
               >
                 <span className="text-lg">{item.icon}</span>
                 <span>{item.label}</span>
@@ -45,7 +49,7 @@ const AdminLayout = ({ children }) => {
             ))}
           </nav>
         </div>
-        
+
         {/* User Info & Logout */}
         <div className="p-4 border-t border-amber-700">
           <div className="flex items-center space-x-3 mb-3">
@@ -78,7 +82,7 @@ const AdminLayout = ({ children }) => {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <div className="p-6">
-          {children}
+          <Outlet />
         </div>
       </div>
     </div>

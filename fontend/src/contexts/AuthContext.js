@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
       getUserProfile();
     }
     console.log("🔑 AuthProvider token:", savedToken ? "✓" : "✗");
-  }, [getUserProfile]);
+  }, [getUserProfile, token]);
 
   const value = {
     user,

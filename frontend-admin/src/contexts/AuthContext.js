@@ -50,9 +50,9 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     logout,
+    token,  
     setToken,
     isAuthenticated: !!user && !!token,
-    isAdmin: user?.role === 'admin',
   };
 
   return (

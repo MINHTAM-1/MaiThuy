@@ -1,94 +1,77 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { productsAPI } from '../../services/api';
+import { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { productsAPI } from "../../services/api";
+import { useDebounce } from "use-debounce";
+import confirmToast from "../../components/ConfirmToast";
+import ROUTES from "../../routes";
+import Loading from "../../components/Loading";
+import Pagination from "../../components/Pagination";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch] = useDebounce(searchTerm, 600);
+  const [error, setError] = useState("");
+
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Sử dụng useCallback để memoize fetchProducts
-  const fetchProducts = useCallback(async () => {
+  const [loading, setLoading] = useState(true);
+
+  // LOAD PRODUCTS
+
+  const fetchProducts = useCallback(async (resetPage = false) => {
     try {
       setLoading(true);
-      setError('');
-      
-      console.log('🔄 Fetching products...');
-      const response = await productsAPI.getAll({
-        page: currentPage,
-        limit: 10,
-        search: searchTerm || undefined
+      setError("");
+
+      const res = await productsAPI.getAll({
+        q: debouncedSearch || undefined,
+        page: resetPage ? 0 : page,
       });
 
-      console.log('📦 Products API Response:', response.data);
-
-      // Xử lý response data
-      if (response.data && response.data.success) {
-        const productsData = response.data.data || response.data.products || response.data;
-        
-        // Đảm bảo products là array
-        if (Array.isArray(productsData)) {
-          setProducts(productsData);
-        } else if (productsData && Array.isArray(productsData.data)) {
-          setProducts(productsData.data);
-        } else if (productsData && Array.isArray(productsData.products)) {
-          setProducts(productsData.products);
-        } else {
-          console.warn('⚠️ Products data is not an array:', productsData);
-          setProducts([]);
-        }
-
-        // Xử lý pagination
-        if (response.data.pagination) {
-          setTotalPages(response.data.pagination.pages || 1);
-        } else if (response.data.totalPages) {
-          setTotalPages(response.data.totalPages);
-        }
+      if (res.data?.success) {
+        const data = res.data.data;
+        setProducts(data.items || []);
+        setTotalPages(data.totalPages || 1);
       } else {
-        console.warn('⚠️ No products data in response');
         setProducts([]);
+        setError("Không tìm thấy sản phẩm");
       }
-    } catch (error) {
-      console.error('❌ Error fetching products:', error);
-      setError('Không thể tải danh sách sản phẩm');
-      setProducts([]);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Không thể tải danh sách sản phẩm");
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm]); // Thêm dependencies
+  }, [debouncedSearch, page]);
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]); // Chỉ cần fetchProducts trong dependencies
+  }, [fetchProducts]);
 
-  const handleDelete = async (productId) => {
-    if (!window.confirm('Bạn có chắc muốn xóa sản phẩm này?')) {
-      return;
-    }
+  // Reset page khi search
+  useEffect(() => {
+    setPage(0);
+  }, [debouncedSearch]);
+
+  // DELETE PRODUCT
+  const handleDelete = async (id) => {
+    const confirmed = await confirmToast({ textConfirm: "Bạn có chắc muốn xóa sản phẩm này?" });
+    if (!confirmed) return;
 
     try {
-      await productsAPI.delete(productId);
-      alert('Xóa sản phẩm thành công!');
-      fetchProducts(); // Refresh list
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Lỗi khi xóa sản phẩm');
+      await productsAPI.delete(id);
+      toast.success("Xóa thành công!");
+
+      // Reload
+      fetchProducts(true);
+    } catch (err) {
+      console.error(err);
+      toast.error("Lỗi khi xóa sản phẩm");
+      setError(err.response?.data?.message || "Lỗi khi xóa sản phẩm")
     }
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setCurrentPage(1);
-    // Không cần gọi fetchProducts() vì useEffect sẽ tự động chạy khi currentPage thay đổi
-  };
-
-  const handleRefresh = () => {
-    setSearchTerm('');
-    setCurrentPage(1);
-    // Không cần gọi fetchProducts() vì useEffect sẽ tự động chạy
   };
 
   const formatCurrency = (amount) => {
@@ -116,12 +99,7 @@ const ProductList = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải sản phẩm...</p>
-        </div>
-      </div>
+      <Loading />
     );
   }
 
@@ -132,7 +110,7 @@ const ProductList = () => {
           <div className="text-red-500 text-4xl mb-4">❌</div>
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={fetchProducts}
+            onClick={() => fetchProducts(true)}
             className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors"
           >
             Thử lại
@@ -152,7 +130,7 @@ const ProductList = () => {
             <p className="text-gray-600 mt-2">Quản lý danh sách sản phẩm trong cửa hàng</p>
           </div>
           <Link
-            to="/admin/products/add"
+            to={ROUTES.ADD_PRODUCT}
             className="bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors flex items-center"
           >
             <span className="mr-2">➕</span>
@@ -162,31 +140,22 @@ const ProductList = () => {
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <form onSubmit={handleSearch} className="flex gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Tìm kiếm sản phẩm..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
-          >
-            🔍 Tìm kiếm
-          </button>
-          <button
-            type="button"
-            onClick={handleRefresh}
-            className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-          >
-            🔄 Làm mới
-          </button>
-        </form>
+      <div className="bg-white rounded-lg shadow p-6 mb-6 flex gap-4">
+        <input
+          type="text"
+          placeholder="Tìm kiếm theo mã hoặc mô tả..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+        />
+
+        <button
+          type="button"
+          onClick={() => fetchProducts(true)}
+          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          🔄 Làm mới
+        </button>
       </div>
 
       {/* Products Table */}
@@ -279,7 +248,7 @@ const ProductList = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <Link
-                              to={`/admin/products/edit/${product._id || product.id}`}
+                              to={`${ROUTES.PRODUCTS}/${product._id}`}
                               className="text-amber-600 hover:text-amber-900"
                             >
                               ✏️ Sửa
@@ -300,32 +269,11 @@ const ProductList = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm text-gray-700">
-                    Trang <span className="font-medium">{currentPage}</span> của{' '}
-                    <span className="font-medium">{totalPages}</span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      ← Trước
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Sau →
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(newPage) => setPage(newPage)}
+            />
           </>
         )}
       </div>

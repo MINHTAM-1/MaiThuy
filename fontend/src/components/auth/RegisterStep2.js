@@ -1,4 +1,4 @@
-const RegisterStep2 = ({ formData, updateFormData, prevStep, nextStep }) => {
+const RegisterStep2 = ({ formData, updateFormData, prevStep, loading }) => {
   const handleNext = () => {
     if (!formData.phone || !formData.email || !formData.password || !formData.confirmPassword) {
       alert('Vui lòng điền đầy đủ thông tin liên lạc');
@@ -8,7 +8,6 @@ const RegisterStep2 = ({ formData, updateFormData, prevStep, nextStep }) => {
       alert('Mật khẩu xác nhận không khớp');
       return;
     }
-    nextStep();
   };
 
   return (
@@ -81,11 +80,11 @@ const RegisterStep2 = ({ formData, updateFormData, prevStep, nextStep }) => {
           Quay lại
         </button>
         <button
-          type="button"
+          type="submit"
           onClick={handleNext}
           className="bg-amber-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
         >
-          Tiếp theo
+          {loading ? "Đang tạo tài khoản..." : "Đăng ký"}
         </button>
       </div>
     </div>
