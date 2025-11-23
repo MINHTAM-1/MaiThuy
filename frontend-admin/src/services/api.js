@@ -40,7 +40,10 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  login: (credentials) => api.post("/auth/login", credentials)
+  login: (credentials) => api.post("/auth/login", credentials),
+  forgotPassword: (email) => api.post("/auth/forgot-password", email),
+  validateResetCode: (payload) => api.post("/auth/validate-reset-code", payload),
+  resetPassword: (payload) => api.post("/auth/reset-password", payload)
 };
 
 // Categories API
@@ -50,6 +53,15 @@ export const categoriesAPI = {
   create: (data) => api.post("/categories", data),
   update: (id, data) => api.put(`/categories/${id}`, data),
   delete: (id) => api.delete(`/categories/${id}`),
+};
+
+// Types API
+export const typesAPI = {
+  getAll: (params = {}) => api.get("/types", { params }),
+  getById: (id) => api.get(`/types/${id}`),
+  create: (data) => api.post("/types", data),
+  update: (id, data) => api.put(`/types/${id}`, data),
+  delete: (id) => api.delete(`/types/${id}`),
 };
 
 // Products API

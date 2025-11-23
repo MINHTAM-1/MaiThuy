@@ -1,6 +1,6 @@
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import './App.css';
-import Login from './pages/Login';
+import Login from './pages/auth/Login';
 import AdminLayout from './components/AdminLayout';
 import { AuthProvider } from './contexts/AuthContext';
 import ProductList from './pages/products/ProductList';
@@ -19,6 +19,12 @@ import PromotionAdd from './pages/promotions/PromotionAdd';
 import PromotionEdit from './pages/promotions/PromotionEdit';
 import ReviewList from './pages/reviews/ReviewList';
 import ContactList from './pages/contacts/ContactList';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ValidateOTP from './pages/auth/ValidateOTP';
+import ResetPassword from './pages/auth/ResetPassword';
+import TypeList from './pages/types/TypeList';
+import TypeAdd from './pages/types/TypeAdd';
+import TypeEdit from './pages/types/TypeEdit';
 
 
 function App() {
@@ -40,7 +46,10 @@ function App() {
 
       <AuthProvider>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path={ROUTES.LOGIN} element={<Login />} />
+          <Route path={ROUTES.FORGOTPASSWORD} element={<ForgotPassword />} />
+          <Route path={ROUTES.VALIDATE_RESETCODE} element={<ValidateOTP />} />
+          <Route path={ROUTES.RESETPASSWORD} element={<ResetPassword />} />
 
           {/* Route cần login */}
           <Route
@@ -62,6 +71,10 @@ function App() {
             <Route path={ROUTES.CATEGORIES} element={<CategoryList/>} />
             <Route path={ROUTES.ADD_CATEGORY} element={<CategoryAdd/>} />
             <Route path={`${ROUTES.CATEGORIES}/:id`} element={<CategoryEdit />} />
+
+            <Route path={ROUTES.TYPES} element={<TypeList/>} />
+            <Route path={ROUTES.ADD_TYPE} element={<TypeAdd/>} />
+            <Route path={`${ROUTES.TYPES}/:id`} element={<TypeEdit />} />
 
             <Route path={ROUTES.PROMOTIONS} element={<PromotionList/>} />
             <Route path={ROUTES.ADD_PROMOTION} element={<PromotionAdd/>} />

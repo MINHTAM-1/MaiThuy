@@ -165,7 +165,7 @@ const ProductList = () => {
             <div className="text-4xl mb-4">📦</div>
             <p className="text-gray-500 text-lg mb-4">Không có sản phẩm nào</p>
             <Link
-              to="/admin/products/add"
+              to={ROUTES.ADD_PRODUCT}
               className="bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-colors inline-flex items-center"
             >
               <span className="mr-2">➕</span>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { productsAPI, categoriesAPI } from "../../services/api";
+import { productsAPI, categoriesAPI, typesAPI } from "../../services/api";
 import Loading from "../../components/Loading";
 import ROUTES from "../../routes";
 
@@ -9,12 +9,13 @@ const ProductEdit = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [categories, setCategories] = useState([]);
+  const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     categoryId: "",
     name: "",
-    type: "",
+    typeId: "",
     price: "",
     discount: "",
     stock: "",
@@ -34,6 +35,10 @@ const ProductEdit = () => {
         if (resCategory.data?.success) {
           setCategories(resCategory.data.data.items);
         }
+        const resType = await typesAPI.getAll();
+        if (resType.data?.success) {
+          setTypes(resType.data.data.items);
+        }
 
         if (id) {
           const resProduct = await productsAPI.getById(id);
@@ -42,7 +47,7 @@ const ProductEdit = () => {
             setFormData({
               categoryId: product.categoryId._id,
               name: product.name,
-              type: product.type,
+              typeId: product.typeId._id,
               price: product.price,
               discount: product.discount,
               stock: product.stock,
@@ -52,8 +57,10 @@ const ProductEdit = () => {
               images: product.images || [],
               files: [], // new uploads
             });
+            console.log(resProduct)
           }
         }
+        
       } catch (err) {
         console.error(err.response?.data?.message);
         toast.error(err.response?.data?.message || "Không tải được dữ liệu sản phẩm hoặc nhóm sản phẩm");
@@ -93,7 +100,7 @@ const ProductEdit = () => {
       const payload = new FormData();
       payload.append("name", formData.name);
       payload.append("categoryId", formData.categoryId);
-      payload.append("type", formData.type);
+      payload.append("typeId", formData.typeId);
       payload.append("price", formData.price);
       payload.append("discount", formData.discount || 0);
       payload.append("stock", formData.stock || 0);
@@ -164,26 +171,6 @@ const ProductEdit = () => {
               />
             </div>
 
-            {/* Nhóm sản phẩm
-            <div className="input-row">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nhóm sản phẩm
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none 
-                focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              >
-                {types.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-
             {/* Loại sản phẩm */}
             <div className="select-row">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -204,19 +191,24 @@ const ProductEdit = () => {
               </select>
             </div>
 
-            <div className="input-row">
+            {/* Nhóm sản phẩm */}
+            <div className="select-row">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Nhóm sản phẩm
               </label>
-              <input
-                type="text"
-                name="type"
-                value={formData.type}
+              <select
+                name="typeId"
+                value={formData.typeId}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none 
                 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
+              >
+                {types.map((type) => (
+                  <option key={type._id} value={type._id}>
+                    {type.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Tên sản phẩm */}

@@ -8,9 +8,10 @@ const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
 
   const adminMenuItems = [
-    { path: ROUTES.HOME, label: 'Dashboard', icon: '📊' },
+    // { path: ROUTES.HOME, label: 'Dashboard', icon: '📊' },
     { path: ROUTES.ORDERS, label: 'Đơn hàng', icon: '📦' },
     { path: ROUTES.CATEGORIES, label: 'Loại Sản phẩm', icon: '🗂️' },
+    { path: ROUTES.TYPES, label: 'Nhóm Sản phẩm', icon: '🗂️' },
     { path: ROUTES.PRODUCTS, label: 'Sản phẩm', icon: '🛍️' },
     { path: ROUTES.PROMOTIONS, label: 'Khuyến mãi', icon: '🎁' },
     { path: ROUTES.REVIEWS, label: 'Đánh giá', icon: '⭐' },

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { useAuth } from "../contexts/AuthContext";
-import { authAPI } from "../services/api";
-import ROUTES from "../routes";
+import { useAuth } from "../../contexts/AuthContext";
+import { authAPI } from "../../services/api";
+import ROUTES from "../../routes";
 
 
 const Login = () => {
@@ -36,7 +36,7 @@ const Login = () => {
         // Cập nhật token vào context
         setToken(token);
 
-        navigate("/"); // chuyển vào trang admin
+        navigate(ROUTES.HOME); // chuyển vào trang admin
       } else {
         setError("Email hoặc mật khẩu không đúng!");
       }
@@ -49,9 +49,7 @@ const Login = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 bg-cover"
-      style={{ backgroundImage: "url(/assets/bg-admin.jpg)" }}
-    >
+      className="min-h-screen flex items-center justify-center p-4 bg-cover">
       <div className="max-w-4xl w-full bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-2">
 
@@ -115,7 +113,7 @@ const Login = () => {
 
               <p className="text-right text-sm">
                 <Link
-                  to="/forgot-password"
+                  to={ROUTES.FORGOTPASSWORD}
                   className="text-gray-600 hover:underline"
                 >
                   Quên mật khẩu?

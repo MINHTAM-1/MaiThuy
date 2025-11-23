@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { categoriesAPI, productsAPI } from "../../services/api";
+import { categoriesAPI, productsAPI, typesAPI } from "../../services/api";
 import Loading from "../../components/Loading";
 import ROUTES from "../../routes";
 
@@ -9,17 +9,11 @@ const ProductAdd = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  
-  const nhomSanPham = [
-    { value: "N001", label: "N001 - Arabica" },
-    { value: "N002", label: "N002 - Robusta" },
-    { value: "N003", label: "N003 - Blend" },
-    { value: "N004", label: "N004 - Đặc biệt" },
-  ];
+  const [types, setTypes] = useState([]);
 
   const [formData, setFormData] = useState({
-    type: "N001",       
-    categoryId: "",     
+    typeId: "",
+    categoryId: "",
     name: "",
     price: "",
     discount: 0,
@@ -31,28 +25,49 @@ const ProductAdd = () => {
   });
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
+
         const res = await categoriesAPI.getAll();
+        const resType = await typesAPI.getAll();
+
+        let categoriesData = [];
+        let typesData = [];
+
         if (res.data?.success) {
-          setCategories(res.data.data.items);
+          categoriesData = res.data.data.items;
+          setCategories(categoriesData);
         }
+
+        if (resType.data?.success) {
+          typesData = resType.data.data.items;
+          setTypes(typesData);
+        }
+
+        // 🌟 Set default categoryId + typeId
+        setFormData(prev => ({
+          ...prev,
+          categoryId: categoriesData[0]?._id || "",
+          typeId: typesData[0]?._id || ""
+        }));
+
       } catch (err) {
         console.error(err.response?.data?.message);
-        toast.error("Không tải được danh mục sản phẩm");
+        toast.error("Không tải được danh mục sản phẩm hoặc nhóm sản phẩm!");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
+    fetchData();
   }, []);
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (name === "files") {
-       setFormData(prev => ({ ...prev, files: Array.from(files) }));
+      setFormData(prev => ({ ...prev, files: Array.from(files) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -69,7 +84,7 @@ const ProductAdd = () => {
       const payload = new FormData();
       payload.append("name", formData.name);
       payload.append("categoryId", formData.categoryId);
-      payload.append("type", formData.type);
+      payload.append("typeId", formData.typeId);
       payload.append("price", formData.price);
       payload.append("discount", formData.discount);
       payload.append("stock", formData.stock);
@@ -82,7 +97,7 @@ const ProductAdd = () => {
       }
 
       setLoading(true);
-      const res = await productsAPI.create(payload); 
+      const res = await productsAPI.create(payload);
       console.log("res: ", res);
       if (res.data?.success) {
         toast.success("Thêm sản phẩm thành công!");
@@ -120,25 +135,8 @@ const ProductAdd = () => {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <section className="add-pro bg-white rounded-lg shadow p-8">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Thông tin sản phẩm</h3>
-          
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nhóm sản phẩm */}
-            <div className="select-row">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nhóm sản phẩm</label>
-              <select
-                name="nsp"
-                value={formData.nsp}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              >
-                {nhomSanPham.map((nsp) => (
-                  <option key={nsp.value} value={nsp.value}>
-                    {nsp.label}
-                  </option>
-                ))}
-              </select>
-            </div>
 
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Loại sản phẩm */}
             <div className="select-row">
               <label className="block text-sm font-medium text-gray-700 mb-2">Loại sản phẩm</label>
@@ -151,6 +149,23 @@ const ProductAdd = () => {
                 {categories.map((category) => (
                   <option key={category._id} value={category._id}>
                     {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Nhóm sản phẩm */}
+            <div className="select-row">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Nhóm sản phẩm</label>
+              <select
+                name="typeId"
+                value={formData.typeId}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              >
+                {types.map((type) => (
+                  <option key={type._id} value={type._id}>
+                    {type.name}
                   </option>
                 ))}
               </select>
@@ -183,7 +198,7 @@ const ProductAdd = () => {
                 required
               />
             </div>
-            
+
             {/* Giảm giá */}
             <div className="input-row">
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -279,12 +294,3 @@ const ProductAdd = () => {
 };
 
 export default ProductAdd;
-
-
-
-
-
-
-
-
-
