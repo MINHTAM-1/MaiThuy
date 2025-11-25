@@ -24,12 +24,14 @@ const paymentStatusColors = {
     PENDING: "warning",
     PAID: "success",
     FAILED: "error",
+    REFUNDED: "primary",
 };
 
 const paymentStatusLabels = {
     PENDING: "Chưa thanh toán",
     PAID: "Đã thanh toán",
     FAILED: "Thất bại",
+    REFUNDED: "Đã hoàn tiền",
 };
 
 const badgeStyles = {
@@ -44,12 +46,14 @@ const OrderDetail = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState(null);
+    const [payment, setPayment] = useState(null);
 
     useEffect(() => {
         const fetchOrder = async () => {
             try {
                 const res = await ordersAPI.getById(id);
-                setOrder(res.data.data);
+                setOrder(res.data.data.order);
+                setPayment(res.data.data.payment);
             } catch (err) {
                 toast.error(err.response?.data?.message || "Không thể tải đơn hàng");
             } finally {
@@ -61,7 +65,6 @@ const OrderDetail = () => {
 
     const address = order?.shippingAddress;
     const shippingAddress = `${address?.detail}, ${address?.ward}, ${address?.district}, ${address?.province}`;
-    console.log("order", order);
 
     if (loading)
         return (
@@ -91,7 +94,7 @@ const OrderDetail = () => {
                 <div className="flex justify-between items-center mb-3">
                     <h2 className="text-xl font-semibold">Chi tiết đơn hàng</h2>
                     <span className="text-red-500">
-                        {orderStatusLabels[order.orderStatus]}
+                        {orderStatusLabels[order.status]}
                     </span>
                 </div>
 
@@ -104,11 +107,14 @@ const OrderDetail = () => {
                 <p><b>Địa chỉ:</b> {shippingAddress}</p>
                 <p><b>Ghi chú:</b> {order.note || " "}</p>
                 <p><b>Thời gian đặt:</b> {new Date(order.createdAt).toLocaleString("vi-VN")}</p>
-                {order.paidTimestamp && (
-                    <p><b>Thời gian thanh toán:</b> {new Date(order.paidTimestamp).toLocaleString("vi-VN")}</p>
+                {payment.paidTimestamp && (
+                    <p><b>Thời gian thanh toán:</b> {new Date(payment.paidTimestamp).toLocaleString("vi-VN")}</p>
                 )}
-                {order.failedTimestamp && (
-                    <p><b>Thời gian thanh toán thất bại:</b> {new Date(order.failedTimestamp).toLocaleString("vi-VN")}</p>
+                {payment.failedTimestamp && (
+                    <p><b>Thời gian thanh toán thất bại:</b> {new Date(payment.failedTimestamp).toLocaleString("vi-VN")}</p>
+                )}
+                {payment.refundedTimestamp && (
+                    <p><b>Thời gian hoàn tiền:</b> {new Date(payment.refundedTimestamp).toLocaleString("vi-VN")}</p>
                 )}
                 {order.confirmedTimestamp && (
                     <p><b>Thời gian xác nhận đơn:</b> {new Date(order.confirmedTimestamp).toLocaleString("vi-VN")}</p>
@@ -128,15 +134,15 @@ const OrderDetail = () => {
                     <span
                         className={`px-3 py-1 text-sm rounded-full border ${badgeStyles.primary}`}
                     >
-                        {paymentLabels[order.paymentMethod]}
+                        {paymentLabels[payment.paymentMethod]}
                     </span>
 
                     {/* Payment Status */}
                     <span
-                        className={`px-3 py-1 text-sm rounded-full border ${badgeStyles[paymentStatusColors[order.paymentStatus]]
+                        className={`px-3 py-1 text-sm rounded-full border ${badgeStyles[paymentStatusColors[payment.status]]
                             }`}
                     >
-                        {paymentStatusLabels[order.paymentStatus]}
+                        {paymentStatusLabels[payment.status]}
                     </span>
                 </div>
 

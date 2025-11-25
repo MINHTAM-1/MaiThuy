@@ -38,7 +38,7 @@ const Orders = () => {
     }, []);
 
     useEffect(() => {
-        setOrders(allOrders.filter(o => o.orderStatus === tab));
+        setOrders(allOrders.filter(o => o.status === tab));
     }, [tab, allOrders]);
 
     const getStatusLabel = (status) => {
@@ -51,11 +51,11 @@ const Orders = () => {
             await ordersAPI.cancel(id);
 
             const updated = allOrders.map((o) =>
-                o._id === id ? { ...o, orderStatus: "CANCELLED" } : o
+                o._id === id ? { ...o, status: "CANCELLED" } : o
             );
 
             setAllOrders(updated);
-            setOrders(updated.filter((o) => o.orderStatus === tab));
+            setOrders(updated.filter((o) => o.status === tab));
 
             toast.success("Hủy đơn thành công");
         } catch (err) {
@@ -106,7 +106,7 @@ const Orders = () => {
                                 Mã đơn: {order._id}
                             </p>
                             <p className="text-red-500">
-                                {getStatusLabel(order.orderStatus)}
+                                {getStatusLabel(order.status)}
                             </p>
                         </div>
 
@@ -157,7 +157,7 @@ const Orders = () => {
                         <div className="mt-4 flex justify-end gap-2">
 
                             {/* PENDING → Hủy đơn */}
-                            {order.orderStatus === "PENDING" && (
+                            {order.status === "PENDING" && (
                                 <button
                                     className="border border-red-500 text-red-500 px-3 py-1 rounded hover:bg-red-50"
                                     onClick={() => handleCancel(order._id)}
@@ -167,7 +167,7 @@ const Orders = () => {
                             )}
 
                             {/* CONFIRMED → Đang xử lý */}
-                            {order.orderStatus === "CONFIRMED" && (
+                            {order.status === "CONFIRMED" && (
                                 <button
                                     disabled
                                     className="border px-3 py-1 rounded text-gray-500 bg-gray-100 cursor-not-allowed"
@@ -177,7 +177,7 @@ const Orders = () => {
                             )}
 
                             {/* SHIPPING → Đang giao */}
-                            {order.orderStatus === "SHIPPING" && (
+                            {order.status === "SHIPPING" && (
                                 <button
                                     disabled
                                     className="border px-3 py-1 rounded text-gray-500 bg-gray-100 cursor-not-allowed"
@@ -187,7 +187,7 @@ const Orders = () => {
                             )}
 
                             {/* DELIVERED */}
-                            {order.orderStatus === "DELIVERED" && (
+                            {order.status === "DELIVERED" && (
                                 <div className="flex gap-2">
                                     {order.isReviewed ? (
                                         <>
@@ -218,7 +218,7 @@ const Orders = () => {
 
 
                             {/* CANCELLED → Mua lại */}
-                            {order.orderStatus === "CANCELLED" && (
+                            {order.status === "CANCELLED" && (
                                 <Link
                                     to={`${ROUTES.PRODUCTS}/${order.items[0].productId._id}`}
                                     className="bg-amber-600 text-white px-3 py-1 rounded hover:bg-amber-700"

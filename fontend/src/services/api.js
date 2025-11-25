@@ -87,8 +87,7 @@ export const ordersAPI = {
 };
 
 export const paymentAPI = {
-  vnpay: (amount, orderId) => api.post("/payment/vnpay", {amount, orderId}),
-  momo: (amount, orderId) => api.post("/payment/momo", {amount, orderId}),
+  create: (amount, orderId, paymentMethod) => api.post("/payments", {amount, orderId, paymentMethod}),
 };
 
 // Reviews API

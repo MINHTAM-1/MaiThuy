@@ -25,6 +25,8 @@ import ResetPassword from './pages/auth/ResetPassword';
 import TypeList from './pages/types/TypeList';
 import TypeAdd from './pages/types/TypeAdd';
 import TypeEdit from './pages/types/TypeEdit';
+import PaymentList from './pages/payments/PaymentList';
+import PaymentDetail from './pages/payments/PaymentDetail';
 
 
 function App() {
@@ -67,6 +69,8 @@ function App() {
 
             <Route path={ROUTES.ORDERS} element={<OrderList/>} />
             <Route path={`${ROUTES.ORDERS}/:id`} element={<OrderDetail />} />
+            <Route path={ROUTES.PAYMENTS} element={<PaymentList/>} />
+            <Route path={`${ROUTES.PAYMENTS}/:id`} element={<PaymentDetail />} />
 
             <Route path={ROUTES.CATEGORIES} element={<CategoryList/>} />
             <Route path={ROUTES.ADD_CATEGORY} element={<CategoryAdd/>} />

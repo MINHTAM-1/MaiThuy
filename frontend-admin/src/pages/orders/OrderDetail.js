@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ordersAPI } from '../../services/api';
 import Loading from '../../components/Loading';
@@ -10,6 +10,8 @@ const OrderDetail = () => {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState({});
+  const [payment, setPayment] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -17,9 +19,10 @@ const OrderDetail = () => {
         setLoading(true);
         const response = await ordersAPI.getById(id);
         if (response.data.success) {
-          const orderData = response.data.data;
+          const orderData = response.data.data.order;
           setOrder(orderData);
-          console.log(orderData)
+          const paymentData = response.data.data.payment;
+          setPayment(paymentData);
         } else {
           setOrder([]);
         }
@@ -49,13 +52,13 @@ const OrderDetail = () => {
 
   const updateOrderStatus = async (newStatus) => {
     try {
-      const res = await ordersAPI.update(id, { orderStatus: newStatus });
+      const res = await ordersAPI.update(id, { status: newStatus });
       const updatedOrder = res.data.data;
 
-      // Cập nhật state order với orderStatus và timestamp mới
+      // Cập nhật state order với status và timestamp mới
       setOrder(prev => ({
         ...prev,
-        orderStatus: updatedOrder.orderStatus,
+        status: updatedOrder.status,
         // Các timestamp tương ứng cũng cập nhật
         confirmedTimestamp: updatedOrder.confirmedTimestamp,
         shippingTimestamp: updatedOrder.shippingTimestamp,
@@ -70,26 +73,7 @@ const OrderDetail = () => {
     }
   };
 
-const updatePaymentStatus = async (newStatus) => {
-    try {
-      const res = await ordersAPI.update(id, { paymentStatus: newStatus });
-      const updatedOrder = res.data.data;
-
-      setOrder(prev => ({
-        ...prev,
-        paymentStatus: updatedOrder.paymentStatus,
-        paidTimestamp: updatedOrder.paidTimestamp,
-        failedTimestamp: updatedOrder.failedTimestamp,
-      }));
-
-      toast.success(`Đã cập nhật trạng thái thanh toán thành ${getStatusText(newStatus).text}`);
-    } catch (error) {
-      console.error('Lỗi khi cập nhật trạng thái:', error);
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật trạng thái!");
-    }
-  };
-
-  const statusInfo = getStatusText(order.orderStatus);
+  const statusInfo = getStatusText(order.status);
   if (loading) {
     return (
       <Loading />
@@ -123,8 +107,8 @@ const updatePaymentStatus = async (newStatus) => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Sản phẩm</h2>
               <div className="space-y-4">
-                {order.items.map((item) => (
-                  <div key={item._id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                {order.items.map((item, index) => (
+                  <div key={`${item._id}-${index}`} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
                     <div className="w-16 h-16 bg-amber-200 rounded-lg flex items-center justify-center overflow-hidden">
                       {item.images[0] ? (
                         <img
@@ -173,7 +157,7 @@ const updatePaymentStatus = async (newStatus) => {
             </div>
 
             {/* Order Timeline */}
-            <OrderTimeline order={order} />
+            <OrderTimeline order={order} payment={payment} />
           </div>
 
           {/* Right Column - Customer Info & Actions */}
@@ -198,7 +182,7 @@ const updatePaymentStatus = async (newStatus) => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Phương thức thanh toán</p>
-                  <p className="font-medium">{order.paymentMethod}</p>
+                  <p className="font-medium">{payment.paymentMethod}</p>
                 </div>
               </div>
             </div>
@@ -207,49 +191,30 @@ const updatePaymentStatus = async (newStatus) => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Thao tác nhanh</h2>
               <div className="space-y-2">
-                  <button
-                    onClick={() => updateOrderStatus('CONFIRMED')}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors
+                <button
+                  onClick={() => updateOrderStatus('CONFIRMED')}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors
                     disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={order.orderStatus !== 'PENDING'}
-                  >
-                    ✓ Xác nhận đơn hàng
-                  </button>
-                  <button
-                    onClick={() => updateOrderStatus('SHIPPING')}
-                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg disabled:bg-gray-400 
+                  disabled={order.status !== 'PENDING'}
+                >
+                  ✓ Xác nhận đơn hàng
+                </button>
+                <button
+                  onClick={() => updateOrderStatus('SHIPPING')}
+                  className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg disabled:bg-gray-400 
                     disabled:cursor-not-allowed hover:bg-purple-700 transition-colors"
-                    disabled={!['PENDING', 'CONFIRMED'].includes(order.orderStatus)}
-                  >
-                    🚚 Chuyển sang giao hàng
-                  </button>
-                  <button
-                    onClick={() => updateOrderStatus('DELIVERED')}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors
+                  disabled={!['PENDING', 'CONFIRMED'].includes(order.status)}
+                >
+                  🚚 Chuyển sang giao hàng
+                </button>
+                <button
+                  onClick={() => updateOrderStatus('DELIVERED')}
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors
                     disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={order.orderStatus !== 'SHIPPING'}
-                  >
-                    ✅ Đánh dấu đã giao
-                  </button>
-                
-                  <>
-                  <button
-                    onClick={() => updatePaymentStatus('PAID')}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors
-                    disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={!['PENDING'].includes(order.paymentStatus)}
-                  >
-                    ✅ Đánh dấu đã thanh toán
-                  </button>
-                  <button
-                    onClick={() => updatePaymentStatus('FAILED')}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors
-                    disabled:bg-gray-400 disabled:cursor-not-allowed"
-                    disabled={!['PENDING'].includes(order.paymentStatus)}
-                  >
-                    ❌ Thanh toán thất bại
-                  </button>
-                  </>
+                  disabled={order.status !== 'SHIPPING'}
+                >
+                  ✅ Đánh dấu đã giao
+                </button>
                 {/* <button className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">
                   📧 Gửi email cho KH
                 </button>
@@ -276,6 +241,13 @@ const updatePaymentStatus = async (newStatus) => {
                   <span className="font-medium">
                     {order.items.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Mã thanh toán:</span>
+                  <span
+                    className="font-medium text-blue-600 cursor-pointer"
+                    onClick={() => navigate(`${ROUTES.PAYMENTS}/${payment._id}`)}
+                  >{payment._id}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Trạng thái:</span>

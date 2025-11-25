@@ -11,7 +11,7 @@ const Cart = () => {
   const [cart, setCart] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setCartContext } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +46,8 @@ const Cart = () => {
     try {
       setUpdating(true);
       await cartAPI.updateItem(productId, quantity);
+      const resCart = await cartAPI.get();
+      setCartContext(resCart.data.data);
     } catch (err) {
       console.error("Update quantity error:", err);
       toast.error("Lỗi khi cập nhật số lượng: " + (err.response?.data?.message || "Vui lòng thử lại"));
@@ -63,6 +65,8 @@ const Cart = () => {
     try {
       setUpdating(true);
       await cartAPI.updateItem(productId, 0);
+      const resCart = await cartAPI.get();
+      setCartContext(resCart.data.data);
       toast.success("Đã xóa sản phẩm khỏi giỏ hàng!");
     } catch (err) {
       console.error("Remove item error:", err);

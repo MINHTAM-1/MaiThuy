@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { ordersAPI, paymentAPI } from "../../services/api";
+import { cartAPI, ordersAPI, paymentAPI } from "../../services/api";
 import PromotionModal from "../../components/promotions/PromotionModal";
 import PromotionDetailModal from "../../components/promotions/PromotionDetailModal";
 import toast from "react-hot-toast";
@@ -11,7 +11,7 @@ import ROUTES from "../../routes";
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, setCartContext } = useAuth();
   const cart = location.state?.cart || { items: [] };
 
   const [selectedPromotion, setSelectedPromotion] = useState(null);
@@ -64,6 +64,42 @@ const Checkout = () => {
       return;
     }
 
+    // Kiểm tra thông tin giao hàng
+    const address = user?.address || {};
+    if (
+      !user?.name ||
+      !user?.phone ||
+      !address.province?.name ||
+      !address.district?.name ||
+      !address.ward?.name ||
+      !address.detail
+    ) {
+      toast((t) => (
+        <div>
+          Vui lòng điền đầy đủ thông tin giao hàng.
+          <div style={{ marginTop: 8 }}>
+            <button
+              onClick={() => {
+                toast.dismiss(t.id);
+                navigate(ROUTES.PROFILE);
+              }}
+              style={{
+                padding: "6px 12px",
+                backgroundColor: "#4f46e5",
+                color: "white",
+                border: "none",
+                borderRadius: 4,
+                cursor: "pointer",
+              }}
+            >
+              Trang cá nhân
+            </button>
+          </div>
+        </div>
+      ), { duration: 8000 });
+      return;
+    }
+
     setLoading(true);
     try {
       const orderData = {
@@ -75,12 +111,12 @@ const Checkout = () => {
           images: item.productId.images
         })),
         shippingAddress: {
-          recipientName: user?.name,
-          phone: user?.phone,
-          province: user?.address.province.name,
-          district: user?.address.district.name,
-          ward: user?.address.ward.name,
-          detail: user?.address.detail
+          recipientName: user.name,
+          phone: user.phone,
+          province: user.address.province.name,
+          district: user.address.district.name,
+          ward: user.address.ward.name,
+          detail: user.address.detail
         },
         paymentMethod: paymentMethod,
         totalAmount: totalAmount,
@@ -88,23 +124,17 @@ const Checkout = () => {
         discountAmount: discount,
         note: note
       };
+
       const order = await ordersAPI.create(orderData);
-      if (paymentMethod === "MOMO") {
-        const res = await paymentAPI.momo(totalAmount, order?.data.data._id);
-        if (res?.data.payUrl) {
-          window.location.href = res.data.payUrl; // redirect sang trang MOMO
-        } else {
-          throw new Error("Không lấy được link thanh toán MOMO");
-        }
-      } else if (paymentMethod === "VNPAY") {
-        const res = await paymentAPI.vnpay(totalAmount, order?.data.data._id);
-        if (res?.paymentUrl) {
-          window.location.href = res.paymentUrl; // redirect sang trang VNPAY
-        } else {
-          throw new Error("Không lấy được link thanh toán VNPAY");
-        }
+      const res = await paymentAPI.create(totalAmount, order?.data.data._id, paymentMethod);
+
+      const updatedCart = await cartAPI.get();
+      setCartContext(updatedCart.data.data);
+
+      if (res?.data.data.paymentId) {
+        navigate(`${ROUTES.ORDERRETURN}/${order?.data.data._id}`);
       } else {
-        navigate(`${ROUTES.ORDERRETURN}/${order.data.data._id}`);
+        window.location.href = res.data.data;
       }
 
       toast.success("Đặt hàng thành công!");
@@ -115,6 +145,7 @@ const Checkout = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">

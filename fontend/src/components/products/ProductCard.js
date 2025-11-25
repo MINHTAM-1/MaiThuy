@@ -25,7 +25,7 @@ const ProductCard = ({ product, onAddToCart, addingToCart }) => {
             {product.categoryId.name}
           </span>
           <span className="inline-block bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded">
-            {product.type}
+            {product.typeId.name}
           </span>
           <p className="font-semibold text-gray-900">
             {product.code && `${product.code}: `}{product.name}

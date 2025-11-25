@@ -75,7 +75,7 @@ export const productsAPI = {
 
 // Promotions API
 export const promotionsAPI = {
-  getAll: () => api.get("/promotions"),
+  getAll: (params = {}) => api.get("/promotions", { params }),
   getById: (id) => api.get(`/promotions/${id}`),
   create: (data) => api.post("/promotions", data),
   update: (id, data) => api.put(`/promotions/${id}`, data),
@@ -84,14 +84,22 @@ export const promotionsAPI = {
 
 // Orders API
 export const ordersAPI = {
-  getAll: () => api.get("/orders"),
+  getAll: (params = {}) => api.get("/orders", { params }),
   getById: (orderId) => api.get(`/orders/${orderId}`),
-  update: (id, data) => api.patch(`/orders/${id}/status`, data),
+  update: (id, data) => api.patch(`/orders/${id}`, data),
+};
+
+// Payments API
+export const paymentsAPI = {
+  getAll: (params = {}) => api.get("/payments", { params }),
+  getById: (paymentId) => api.get(`/payments/${paymentId}`),
+  update: (id, data) => api.patch(`/payments/${id}`, data),
+  refundMomo: (paymentId) => api.post("/payments/refund-momo", { paymentId })
 };
 
 // Reviews API
 export const reviewsAPI = {
-  getAll: () => api.get("/reviews"),
+  getAll: (params = {}) => api.get("/reviews", { params }),
 };
 
 // Users API
@@ -100,7 +108,7 @@ export const usersAPI = {
 };
 
 export const contactsAPI = {
-  getAll: () => api.get("/contact"),
+  getAll: (params = {}) => api.get("/contact", { params }),
   update: (id, data) => api.patch(`/contact/${id}/state`, data),
 };
 

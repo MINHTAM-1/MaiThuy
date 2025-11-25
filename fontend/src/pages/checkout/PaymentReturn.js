@@ -9,7 +9,6 @@ export default function PaymentReturn() {
     const [searchParams] = useSearchParams();
     const orderId = searchParams.get("orderId");
 
-
     useEffect(() => {
         const resultCode = searchParams.get("resultCode");
 
@@ -54,11 +53,6 @@ export default function PaymentReturn() {
                     <Link to={`${ROUTES.ORDERS}/${orderId}`} className="border border-amber-600 text-amber-600 px-5 py-2 rounded-md hover:bg-amber-100 transition">
                         Xem chi tiết đơn hàng
                     </Link>
-                    {status === "failed" && (
-                        <Link to={ROUTES.CART} className="border border-gray-400 px-5 py-2 rounded-md hover:bg-gray-100 transition">
-                            Thử lại thanh toán
-                        </Link>
-                    )}
                 </div>
             </div>
         </div>

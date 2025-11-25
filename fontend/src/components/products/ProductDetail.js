@@ -11,7 +11,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [currentImage, setCurrentImage] = useState(0);
   const [addingToCart, setAddingToCart] = useState({});
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setCartContext } = useAuth();
 
   useEffect(() => {
     const getProductDetail = async () => {
@@ -34,6 +34,8 @@ const ProductDetail = () => {
     setAddingToCart(prev => ({ ...prev, [product._id]: true }));
     try {
       await cartAPI.addItem(product._id);
+      const resCart = await cartAPI.get();
+      setCartContext(resCart.data.data);
       toast.success("Đã thêm sản phẩm vào giỏ!");
     } catch (err) {
       toast.error("Lỗi khi thêm sản phẩm: " + (err.response?.data?.message || 'Lỗi'));
@@ -110,7 +112,7 @@ const ProductDetail = () => {
                   {product.categoryId?.name}
                 </span>
                 <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded text-sm">
-                  {product.type}
+                  {product.typeId?.name}
                 </span>
               </div>
 

@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }) => {
       if (res.data?.data) {
         setUser(res.data.data);
       }
-      console.log('👤 User profile fetched:', res.data?.data);
     } catch (error) {
       console.error('Get profile error:', error.response?.data?.message);
     }

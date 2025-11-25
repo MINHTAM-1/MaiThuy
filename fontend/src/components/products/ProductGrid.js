@@ -6,7 +6,7 @@ import { cartAPI } from '../../services/api';
 
 const ProductGrid = ({ products }) => {
   const [addingToCart, setAddingToCart] = useState({});
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, setCartContext } = useAuth();
 
   const handleAddToCart = async (product) => {
     if (!isAuthenticated) {
@@ -16,6 +16,8 @@ const ProductGrid = ({ products }) => {
     setAddingToCart(prev => ({ ...prev, [product._id]: true }));
     try {
       await cartAPI.addItem(product._id);
+      const resCart = await cartAPI.get();
+      setCartContext(resCart.data.data);
       toast.success("Đã thêm sản phẩm vào giỏ!");
     } catch (err) {
       toast.error("Lỗi khi thêm sản phẩm: " + (err.response?.data?.message || 'Lỗi'));

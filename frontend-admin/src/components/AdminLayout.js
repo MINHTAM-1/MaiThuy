@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ROUTES from '../routes';
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -10,6 +10,7 @@ const AdminLayout = ({ children }) => {
   const adminMenuItems = [
     // { path: ROUTES.HOME, label: 'Dashboard', icon: '📊' },
     { path: ROUTES.ORDERS, label: 'Đơn hàng', icon: '📦' },
+    { path: ROUTES.PAYMENTS, label: 'Thanh toán', icon: '💵' },
     { path: ROUTES.CATEGORIES, label: 'Loại Sản phẩm', icon: '🗂️' },
     { path: ROUTES.TYPES, label: 'Nhóm Sản phẩm', icon: '🗂️' },
     { path: ROUTES.PRODUCTS, label: 'Sản phẩm', icon: '🛍️' },

@@ -14,7 +14,7 @@ const OrderReturn = () => {
     const fetchOrder = async () => {
       try {
         const data = await ordersAPI.getById(id);
-        setOrder(data.data.data);
+        setOrder(data.data.data.order);
       } catch (err) {
         toast.error(err.response?.data?.message || "Có lỗi xảy ra khi tải đơn hàng");
       } finally {

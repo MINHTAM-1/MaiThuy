@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import { usersAPI } from '../services/api';
+import { cartAPI, usersAPI } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import ROUTES from '../routes';
 
@@ -15,6 +15,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [cart, setCartContext] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const navigate = useNavigate();
 
@@ -32,7 +33,10 @@ export const AuthProvider = ({ children }) => {
       if (res.data?.data) {
         setUser(res.data.data);
       }
-      console.log('👤 User profile fetched:', res.data?.data);
+      const resCart = await cartAPI.get();
+      if (resCart.data?.data) {
+        setCartContext(resCart.data.data);
+      }
     } catch (error) {
       console.error('Get profile error:', error.response?.data?.message);
     }
@@ -49,10 +53,11 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    cart,
     logout,
     setToken,
-    isAuthenticated: !!user && !!token,
-    isAdmin: user?.role === 'admin',
+    setCartContext,
+    isAuthenticated: !!user && !!token
   };
 
   return (

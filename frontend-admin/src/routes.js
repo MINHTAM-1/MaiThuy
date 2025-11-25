@@ -16,6 +16,7 @@ const   ROUTES = {
   REVIEWS: '/reviews',
   PROMOTIONS: '/promotions',
   ADD_PROMOTION: '/promotions/add',
+  PAYMENTS: '/payments'
 };
 
 export default ROUTES;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ordersAPI } from '../../services/api';
+import { ordersAPI, paymentsAPI } from '../../services/api';
 import toast from 'react-hot-toast';
 import Loading from '../../components/Loading';
 import { useNavigate } from 'react-router-dom';
@@ -27,7 +27,7 @@ const OrderList = () => {
       if (response.data.success) {
         const data = response.data.data.data;
         setOrders(data || []);
-        setTotalPages(data.totalPages || 1);
+        setTotalPages(response.data.data.pagination.totalPages || 1);
       } else {
         setOrders([]);
         setTotalPages(1);
@@ -46,7 +46,7 @@ const OrderList = () => {
 
   useEffect(() => {
     const filtered = orders.filter(order => {
-      const matchesStatus = filterStatus === 'all' || order.orderStatus === filterStatus;
+      const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
       const orderId = order._id || order.id || '';
       const customerName = order.shippingAddress?.recipientName || '';
       const phone = order.shippingAddress?.phone || '';
@@ -73,31 +73,19 @@ const OrderList = () => {
     const statusMap = {
       'PENDING': { text: 'Chưa thanh toán', color: 'bg-yellow-100 text-yellow-800', badge: '🕒' },
       'PAID': { text: 'Đã thanh toán', color: 'bg-green-100 text-green-800', badge: '✅' },
-      'FAILED': { text: 'Thanh toán thất bại', color: 'bg-red-100 text-red-800', badge: '❌' }
+      'FAILED': { text: 'Thanh toán thất bại', color: 'bg-red-100 text-red-800', badge: '❌' },
+      'REFUNDED': { text: 'Đã hoàn tiền', color: 'bg-green-200 text-green-800', badge: '✅' },
     };
     return statusMap[status] || { text: status, color: 'bg-gray-100 text-gray-800', badge: '❓' };
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      await ordersAPI.update(orderId, { orderStatus: newStatus });
+      await ordersAPI.update(orderId, { status: newStatus });
       setOrders(orders.map(order =>
-        order._id === orderId ? { ...order, orderStatus: newStatus } : order
+        order._id === orderId ? { ...order, status: newStatus } : order
       ));
       toast.success(`Đã cập nhật trạng thái đơn hàng thành ${getStatusText(newStatus).text}`);
-    } catch (error) {
-      console.error('Lỗi khi cập nhật trạng thái:', error);
-      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật trạng thái!");
-    }
-  };
-
-  const updatePaymentStatus = async (orderId, newStatus) => {
-    try {
-      await ordersAPI.update(orderId, { paymentStatus: newStatus });
-      setOrders(orders.map(order =>
-        order._id === orderId ? { ...order, paymentStatus: newStatus } : order
-      ));
-      toast.success(`Đã cập nhật trạng thái thanh toán thành ${getStatusText(newStatus).text}`);
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật trạng thái!");
@@ -158,7 +146,6 @@ const OrderList = () => {
         filteredOrders={filteredOrders}
         navigate={navigate}
         updateOrderStatus={updateOrderStatus}
-        updatePaymentStatus={updatePaymentStatus}
         formatDate={formatDate}
         formatCurrency={formatCurrency}
         getStatusText={getStatusText}
@@ -171,6 +158,7 @@ const OrderList = () => {
         totalPages={totalPages}
         onPageChange={(newPage) => setPage(newPage)}
       />
+      
     </div>
   );
 };
