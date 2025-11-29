@@ -9,7 +9,7 @@ import ROUTES from "../../routes";
 
 const ORDER_TABS = [
     { key: "PENDING", label: "Chờ xác nhận" },
-    { key: "CONFIRM", label: "Đã xác nhận" },
+    { key: "CONFIRMED", label: "Đã xác nhận" },
     { key: "SHIPPING", label: "Đang giao" },
     { key: "DELIVERED", label: "Đã giao" },
     { key: "CANCELLED", label: "Đã hủy" },

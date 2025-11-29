@@ -29,6 +29,7 @@ const PaymentList = () => {
 
         setPayments(data || []);
         setTotalPages(res.data.data.totalPages || 1);
+        console.log(data)
       } else {
         setPayments([]);
         setTotalPages(1);
@@ -180,73 +181,75 @@ const PaymentList = () => {
                 </td>
               </tr>
             ) : (
-              filteredPayments.map((payment) => {
-                <tr key={payment._id}
+              filteredPayments.map((fpayment) => {
+                return (
+                <tr key={fpayment._id}
                   className="border-b hover:bg-gray-50 cursor-pointer"
-                  onClick={() => navigate(`${ROUTES.PAYMENTS}/${payment._id}`)}>
-                  <td className="p-3">{payment.transactionId || "—"}</td>
+                  onClick={() => navigate(`${ROUTES.PAYMENTS}/${fpayment._id}`)}>
+                  <td className="p-3">{fpayment.transactionId || "—"}</td>
 
                   <td
                     className="px-6 py-4 whitespace-nowrap text-blue-600 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`${ROUTES.ORDERS}/${payment.orderId}`);
+                      navigate(`${ROUTES.ORDERS}/${fpayment.orderId}`);
                     }}
                   >
-                    {payment.orderId}
+                    {fpayment.orderId}
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap">{payment.paymentMethod}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{fpayment.paymentMethod}</td>
 
-                  <td className="px-6 py-4 whitespace-nowrap font-semibold">{formatMoney(payment.amount)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap font-semibold">{formatMoney(fpayment.amount)}</td>
 
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 rounded ${getPaymentStatus(payment.status).color}`}>
-                      {getPaymentStatus(payment.status).text}
+                    <span className={`px-3 py-1 rounded ${getPaymentStatus(fpayment.status).color}`}>
+                      {getPaymentStatus(fpayment.status).text}
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 whitespace-nowrap">{formatDate(payment.createdAt)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{formatDate(fpayment.createdAt)}</td>
 
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                    {payment.paymentMethod === 'COD' && (
+                    {fpayment.paymentMethod === 'COD' && (
                       <>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updatePaymentStatus(payment._id, 'PAID');
+                            updatePaymentStatus(fpayment._id, 'PAID');
                           }}
                           className="text-blue-600 hover:text-blue-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                          disabled={payment.status !== 'PENDING'}
+                          disabled={fpayment.status !== 'PENDING'}
                         >
                           Đã thanh toán
                         </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            updatePaymentStatus(payment._id, 'FAILED');
+                            updatePaymentStatus(fpayment._id, 'FAILED');
                           }}
                           className="text-purple-600 hover:text-purple-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                          disabled={!['PENDING'].includes(payment.status)}
+                          disabled={!['PENDING'].includes(fpayment.status)}
                         >
                           Thanh toán thất bại
                         </button>
                       </>
                     )}
-                    {payment.paymentMethod !== 'COD' && (
+                    {fpayment.paymentMethod !== 'COD' && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRefund(payment._id);
+                          onRefund(fpayment._id);
                         }}
                         className="text-green-600 hover:text-green-900 disabled:text-gray-400 disabled:cursor-not-allowed"
-                        disabled={payment.status !== 'PAID'}
+                        disabled={fpayment.status !== 'PAID'}
                       >
                         Hoàn tiền
                       </button>
                     )}
                   </td>
                 </tr>
+                )
               })
               )}
             </tbody>

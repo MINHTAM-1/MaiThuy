@@ -21,7 +21,7 @@ export default function Review() {
             setLoading(true);
             try {
                 const data = await ordersAPI.getById(orderId);
-                const order = data.data.data;
+                const order = data.data.data.order;
                 if (!mounted) return;
 
                 setOrder(order);
@@ -29,7 +29,7 @@ export default function Review() {
                 // Nếu đã đánh giá → load lại review từ API
                 if (order.isReviewed) {
                     const res = await reviewsAPI.getByOrder(orderId);
-                    const existingReviews = res.data.data;
+                    const existingReviews = res.data.data.items;
 
                     const init = {};
                     existingReviews.forEach((rv) => {
